@@ -60,14 +60,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
           <div className="hidden sm:flex items-center space-x-3 shrink-0">
             <ThemeToggle />
 
-            <div className="hidden lg:flex items-center space-x-2 bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 px-3 py-1.5 rounded-full text-xs text-slate-800 dark:text-slate-300 font-medium">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>1-on-1 Sessions Available Now</span>
-            </div>
-
             <button
               onClick={scrollToBooking}
               className="relative group overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 p-[1px] font-semibold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 shrink-0"
@@ -99,13 +91,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-[#0a0f1d] border-b border-slate-200 dark:border-slate-800 px-4 pt-4 pb-6 space-y-4 shadow-xl">
-          <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 px-3 py-1.5 rounded-full text-xs text-slate-800 dark:text-slate-300 w-fit font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>1-on-1 Sessions Available Now</span>
-          </div>
           <nav className="flex flex-col space-y-3 text-base font-semibold text-slate-800 dark:text-slate-300">
             <a href="#booking-section" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-600 dark:hover:text-emerald-400 py-1">
               Session Tracks
