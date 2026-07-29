@@ -257,7 +257,7 @@ export interface CompanyItem {
   logo?: string;
 }
 
-export const ALUMNI_COMPANIES: (string | CompanyItem)[] = Array.from({ length: 18 }, (_, i) => ({
+export const ALUMNI_COMPANIES: (string | CompanyItem)[] = Array.from({ length: 31 }, (_, i) => ({
   name: `Alumni Partner ${i + 1}`,
   logo: `/logos/${i + 1}.png`,
 }));
