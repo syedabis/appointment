@@ -252,7 +252,12 @@ export const TESTIMONIALS: Testimonial[] = [
   }
 ];
 
-export const ALUMNI_COMPANIES = [
+export interface CompanyItem {
+  name: string;
+  logo?: string;
+}
+
+export const ALUMNI_COMPANIES: (string | CompanyItem)[] = [
   "Google", "Amazon", "Microsoft", "Meta", "Turing", "EasyHire", "NexusBot", "DataCrumbs Labs", "Sarb", "Careem"
 ];
 

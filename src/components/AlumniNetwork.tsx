@@ -20,14 +20,27 @@ export const AlumniNetwork: React.FC = () => {
 
         {/* Logos Marquee / Grid */}
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
-          {ALUMNI_COMPANIES.map((company, index) => (
-            <div
-              key={index}
-              className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm sm:text-base tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-sm"
-            >
-              {company}
-            </div>
-          ))}
+          {ALUMNI_COMPANIES.map((company, index) => {
+            const companyName = typeof company === "string" ? company : company.name;
+            const logoUrl = typeof company === "object" ? company.logo : undefined;
+
+            return (
+              <div
+                key={index}
+                className="w-[140px] sm:w-[160px] h-[52px] px-4 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-sm flex items-center justify-center text-center"
+              >
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={`${companyName} logo`}
+                    className="max-h-7 max-w-[120px] object-contain filter dark:brightness-200"
+                  />
+                ) : (
+                  <span>{companyName}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="pt-4 flex flex-wrap justify-center items-center gap-8 text-slate-600 dark:text-slate-400 font-medium text-xs sm:text-sm">
