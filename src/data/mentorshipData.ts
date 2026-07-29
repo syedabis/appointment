@@ -258,7 +258,16 @@ export interface CompanyItem {
 }
 
 export const ALUMNI_COMPANIES: (string | CompanyItem)[] = [
-  "Google", "Amazon", "Microsoft", "Meta", "Turing", "EasyHire", "NexusBot", "DataCrumbs Labs", "Sarb", "Careem"
+  { name: "Google", logo: "/logos/google.png" },
+  { name: "Amazon", logo: "/logos/amazon.png" },
+  { name: "Microsoft", logo: "/logos/microsoft.png" },
+  { name: "Meta", logo: "/logos/meta.png" },
+  { name: "Turing", logo: "/logos/turing.png" },
+  { name: "EasyHire", logo: "/logos/easyhire.png" },
+  { name: "NexusBot", logo: "/logos/nexusbot.png" },
+  { name: "DataCrumbs Labs", logo: "/logos/datacrumbs.png" },
+  { name: "Sarb", logo: "/logos/sarb.png" },
+  { name: "Careem", logo: "/logos/careem.png" },
 ];
 
 export const FAQS = [

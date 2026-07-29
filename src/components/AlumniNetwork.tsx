@@ -33,7 +33,18 @@ export const AlumniNetwork: React.FC = () => {
                   <img
                     src={logoUrl}
                     alt={`${companyName} logo`}
-                    className="max-h-7 max-w-[120px] object-contain filter dark:brightness-200"
+                    className="max-h-8 max-w-[125px] object-contain"
+                    onError={(e) => {
+                      // If image fails to load, hide image and show text
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                      const parent = e.currentTarget.parentElement;
+                      if (parent && !parent.querySelector(".fallback-text")) {
+                        const span = document.createElement("span");
+                        span.className = "fallback-text";
+                        span.innerText = companyName;
+                        parent.appendChild(span);
+                      }
+                    }}
                   />
                 ) : (
                   <span>{companyName}</span>
