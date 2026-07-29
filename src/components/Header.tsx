@@ -51,9 +51,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
             <a href="#why-section" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
               Why Mentorship
             </a>
-            <a href="#mentors-section" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-              Lead Mentor
-            </a>
             <a href="#faq-section" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
               FAQ
             </a>
@@ -68,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>Mentor Syed Abis Online</span>
+              <span>1-on-1 Sessions Available Now</span>
             </div>
 
             <button
@@ -107,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>Mentor Syed Abis Online</span>
+            <span>1-on-1 Sessions Available Now</span>
           </div>
           <nav className="flex flex-col space-y-3 text-base font-semibold text-slate-800 dark:text-slate-300">
             <a href="#booking-section" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-600 dark:hover:text-emerald-400 py-1">
@@ -115,9 +112,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
             </a>
             <a href="#why-section" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-600 dark:hover:text-emerald-400 py-1">
               Why Mentorship
-            </a>
-            <a href="#mentors-section" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-600 dark:hover:text-emerald-400 py-1">
-              Lead Mentor
             </a>
             <a href="#faq-section" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-600 dark:hover:text-emerald-400 py-1">
               FAQ
