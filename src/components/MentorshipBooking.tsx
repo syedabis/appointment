@@ -210,7 +210,7 @@ export const MentorshipBooking: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
             <span>Interactive 1-on-1 Mentorship Scheduler</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
             Reserve Your 1-on-1 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">Mentorship Session</span>
           </h2>
           <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base font-medium">
