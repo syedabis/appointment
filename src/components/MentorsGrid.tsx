@@ -102,7 +102,7 @@ export const MentorsGrid: React.FC<MentorsGridProps> = ({ onSelectMentor }) => {
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/35 hover:scale-105 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4 text-slate-950" />
-                  Select Mentor & Reserve
+                  Reserve 1-on-1 Session Now
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
               </div>

@@ -174,7 +174,7 @@ export const MentorshipBooking: React.FC = () => {
       const randomId = "DC-101-" + Math.floor(100000 + Math.random() * 900000);
       setBookingId(randomId);
       setIsSubmitted(true);
-      setCurrentStep(5);
+      setCurrentStep(4);
 
       // Trigger celebratory confetti effect
       confetti({
@@ -211,7 +211,7 @@ export const MentorshipBooking: React.FC = () => {
             <span>Interactive 1-on-1 Mentorship Scheduler</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-            Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">Time Slot & Mentor</span>
+            Reserve Your 1-on-1 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">Mentorship Session</span>
           </h2>
           <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base font-medium">
             Enrolled DataCrumbs students can enter their Roll No to auto-fill their profile & apply their free 1-on-1 mentorship pass instantly!
@@ -219,13 +219,12 @@ export const MentorshipBooking: React.FC = () => {
         </div>
 
         {/* STEP PROGRESS BAR */}
-        <div className="mb-10 max-w-4xl mx-auto">
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 relative">
+        <div className="mb-10 max-w-3xl mx-auto">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 relative">
             {[
               { num: 1, label: "Session Track", icon: Layers },
-              { num: 2, label: "Choose Mentor", icon: UserCheck },
-              { num: 3, label: "Date & Slot", icon: CalendarIcon },
-              { num: 4, label: "Student Intake", icon: FileText }
+              { num: 2, label: "Date & Time Slot", icon: CalendarIcon },
+              { num: 3, label: "Student Intake", icon: FileText }
             ].map((step) => {
               const isActive = currentStep === step.num;
               const isCompleted = currentStep > step.num || isSubmitted;
@@ -235,7 +234,7 @@ export const MentorshipBooking: React.FC = () => {
                   key={step.num}
                   disabled={isSubmitted || step.num > currentStep + 1}
                   onClick={() => !isSubmitted && setCurrentStep(step.num)}
-                  className={`flex flex-col sm:flex-row items-center justify-center gap-2 p-3 rounded-xl border text-xs sm:text-sm font-bold transition-all ${
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 rounded-xl border text-xs sm:text-sm font-bold transition-all ${
                     isActive
                       ? "bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-400 shadow-lg shadow-emerald-500/10"
                       : isCompleted
@@ -360,7 +359,7 @@ export const MentorshipBooking: React.FC = () => {
                     onClick={handleNextStep}
                     className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all flex items-center justify-center gap-2 ml-auto"
                   >
-                    Continue to Mentor Selection
+                    Select Date & Time Slot
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
@@ -368,134 +367,14 @@ export const MentorshipBooking: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 2: CHOOSE MENTOR */}
+          {/* STEP 2: DATE & TIME SLOT PICKER */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    Step 2: Select Your Senior Mentor
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Choose the expert best aligned with your target domain.</p>
-                </div>
-
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 mt-3 sm:mt-0 overflow-x-auto max-w-full">
-                  {[
-                    { id: "all", label: "All Experts" },
-                    { id: "genai", label: "GenAI & LLMs" },
-                    { id: "ml", label: "Machine Learning" },
-                    { id: "n8n", label: "n8n Automation" },
-                    { id: "career", label: "Career & Resume" }
-                  ].map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                        selectedCategory === cat.id
-                          ? "bg-emerald-500 text-slate-950 shadow"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredMentors.map((mentor) => {
-                  const isSelected = selectedMentor.id === mentor.id;
-                  return (
-                    <div
-                      key={mentor.id}
-                      onClick={() => setSelectedMentor(mentor)}
-                      className={`rounded-2xl p-6 border cursor-pointer transition-all duration-300 flex flex-col justify-between ${
-                        isSelected
-                          ? "bg-emerald-50/60 dark:bg-slate-900/90 border-emerald-500 shadow-xl shadow-emerald-500/10"
-                          : "bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/70 shadow-sm"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-start gap-4">
-                          <img
-                            src={mentor.avatar}
-                            alt={mentor.name}
-                            className="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500/30 shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-lg font-bold text-slate-900 dark:text-white truncate">{mentor.name}</h4>
-                              {isSelected && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />}
-                            </div>
-                            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{mentor.role}</p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">{mentor.company} • {mentor.experienceYears}+ Yrs Exp</p>
-
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex text-amber-400">
-                                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                              </div>
-                              <span className="text-xs font-bold text-slate-900 dark:text-white">{mentor.rating}</span>
-                              <span className="text-xs text-slate-500">({mentor.reviewsCount} sessions)</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-slate-700 dark:text-slate-300 mt-4 leading-relaxed font-medium">{mentor.bio}</p>
-
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                          {mentor.stack.map((st, i) => (
-                            <span key={i} className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                              {st}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
-                        <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          Next Slot:
-                        </span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{mentor.nextAvailable}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-                <button
-                  onClick={handlePrevStep}
-                  className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-800 text-sm font-semibold flex items-center gap-2"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Back
-                </button>
-
-                <div className="text-xs text-slate-600 dark:text-slate-400 hidden sm:block">
-                  Mentor: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{selectedMentor.name}</span>
-                </div>
-
-                <button
-                  onClick={handleNextStep}
-                  className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all flex items-center justify-center gap-2"
-                >
-                  Select Date & Time Slot
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: DATE & TIME SLOT PICKER */}
-          {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    Step 3: Select Date, Time Zone & Slot
+                    Step 2: Select Date, Time Zone & Slot
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">All times will automatically adjust to your selected time zone.</p>
                 </div>
@@ -514,6 +393,30 @@ export const MentorshipBooking: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Lead Mentor Banner */}
+              <div className="bg-emerald-50/80 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <img
+                    src={selectedMentor.avatar}
+                    alt={selectedMentor.name}
+                    className="w-12 h-12 rounded-xl object-cover border border-emerald-500/50 shadow-sm shrink-0"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedMentor.name}</span>
+                      <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded">
+                        Lead Mentor
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{selectedMentor.role} • {selectedMentor.company}</p>
+                  </div>
+                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 font-medium text-right hidden sm:block">
+                  <span>Rating: </span>
+                  <strong className="text-slate-900 dark:text-white font-bold">⭐ {selectedMentor.rating}</strong> ({selectedMentor.reviewsCount}+ sessions)
                 </div>
               </div>
 
@@ -597,7 +500,7 @@ export const MentorshipBooking: React.FC = () => {
                       <strong className="text-slate-900 dark:text-white font-bold">{selectedDate} @ {selectedSlot.time} ({selectedTimezone})</strong>
                     </div>
                   </div>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{selectedMentor.name}</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Mentor: {selectedMentor.name}</span>
                 </div>
               )}
 
@@ -626,8 +529,8 @@ export const MentorshipBooking: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 4: STUDENT INTAKE & ROLL NO AUTO-FETCH FORM */}
-          {currentStep === 4 && (
+          {/* STEP 3: STUDENT INTAKE & ROLL NO AUTO-FETCH FORM */}
+          {currentStep === 3 && (
             <form onSubmit={handleConfirmBooking} className="space-y-6">
               <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -894,7 +797,7 @@ export const MentorshipBooking: React.FC = () => {
           )}
 
           {/* STEP 5: CONFIRMATION & CALENDAR PASS */}
-          {currentStep === 5 && isSubmitted && (
+          {currentStep === 4 && isSubmitted && (
             <div className="text-center max-w-2xl mx-auto py-6 space-y-8 animate-fadeIn">
               
               <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/30">

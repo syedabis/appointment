@@ -5,7 +5,7 @@ import { CheckCircle2, XCircle, Sparkles, Zap } from "lucide-react";
 
 export const WhyMentorship: React.FC = () => {
   return (
-    <section className="py-20 bg-slate-50 dark:bg-[#080c14] relative overflow-hidden border-t border-slate-200 dark:border-slate-900">
+    <section id="why-section" className="py-20 bg-slate-50 dark:bg-[#080c14] relative overflow-hidden border-t border-slate-200 dark:border-slate-900">
       {/* Glow Effects background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none animate-pulse-glow" />
 
