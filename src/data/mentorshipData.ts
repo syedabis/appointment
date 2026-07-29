@@ -257,18 +257,10 @@ export interface CompanyItem {
   logo?: string;
 }
 
-export const ALUMNI_COMPANIES: (string | CompanyItem)[] = [
-  { name: "Google", logo: "/logos/google.png" },
-  { name: "Amazon", logo: "/logos/amazon.png" },
-  { name: "Microsoft", logo: "/logos/microsoft.png" },
-  { name: "Meta", logo: "/logos/meta.png" },
-  { name: "Turing", logo: "/logos/turing.png" },
-  { name: "EasyHire", logo: "/logos/easyhire.png" },
-  { name: "NexusBot", logo: "/logos/nexusbot.png" },
-  { name: "DataCrumbs Labs", logo: "/logos/datacrumbs.png" },
-  { name: "Sarb", logo: "/logos/sarb.png" },
-  { name: "Careem", logo: "/logos/careem.png" },
-];
+export const ALUMNI_COMPANIES: (string | CompanyItem)[] = Array.from({ length: 18 }, (_, i) => ({
+  name: `Alumni Partner ${i + 1}`,
+  logo: `/logos/${i + 1}.png`,
+}));
 
 export const FAQS = [
   {

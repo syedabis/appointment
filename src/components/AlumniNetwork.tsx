@@ -27,13 +27,13 @@ export const AlumniNetwork: React.FC = () => {
             return (
               <div
                 key={index}
-                className="w-[140px] sm:w-[160px] h-[52px] px-4 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-sm flex items-center justify-center text-center"
+                className="w-[140px] sm:w-[160px] h-[54px] px-3 sm:px-4 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-sm flex items-center justify-center text-center overflow-hidden"
               >
                 {logoUrl ? (
                   <img
                     src={logoUrl}
                     alt={`${companyName} logo`}
-                    className="max-h-8 max-w-[125px] object-contain"
+                    className="max-h-9 sm:max-h-10 max-w-[135px] object-contain transition-transform duration-200"
                     onError={(e) => {
                       // If image fails to load, hide image and show text
                       (e.currentTarget as HTMLElement).style.display = "none";
