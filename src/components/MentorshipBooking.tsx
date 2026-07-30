@@ -13,6 +13,7 @@ import {
   fetchStudentByRollNo,
   EnrolledStudent
 } from "@/data/mentorshipData";
+import { withBasePath } from "@/lib/basePath";
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -55,6 +56,7 @@ export const MentorshipBooking: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<"easypaisa" | "card" | "bank">("easypaisa");
   const [trxId, setTrxId] = useState<string>("");
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   // Selection states
   const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(null);
@@ -166,13 +168,43 @@ export const MentorshipBooking: React.FC = () => {
     setShowPaymentModal(true);
   };
 
-  const executeFinalPayment = () => {
+  const executeFinalPayment = async () => {
     setIsProcessingPayment(true);
-    setTimeout(() => {
-      setIsProcessingPayment(false);
+    setSubmitError("");
+
+    try {
+      const response = await fetch(withBasePath("/api/bookings"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackTitle: selectedTrack?.title,
+          amount: verifiedStudent ? "Rs 0 (Student Pass)" : selectedTrack?.price,
+          mentorName: selectedMentor.name,
+          date: selectedDate,
+          slot: selectedSlot?.time,
+          timezone: selectedTimezone,
+          fullName: studentDetails.fullName,
+          email: studentDetails.email,
+          phone: studentDetails.phone,
+          careerStatus: studentDetails.status,
+          portfolioUrl: studentDetails.portfolioUrl,
+          goals: studentDetails.goals,
+          focusAreas: studentDetails.focusAreas,
+          rollNo: verifiedStudent?.rollNo ?? "",
+          cohort: verifiedStudent?.cohort ?? "",
+          isEnrolledVerified: Boolean(verifiedStudent),
+          paymentMethod: verifiedStudent ? "Student Free Pass" : paymentMethod,
+          trxId: verifiedStudent ? "" : trxId
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Could not record your booking. Please try again.");
+      }
+
+      setBookingId(result.bookingId);
       setShowPaymentModal(false);
-      const randomId = "DC-101-" + Math.floor(100000 + Math.random() * 900000);
-      setBookingId(randomId);
       setIsSubmitted(true);
       setCurrentStep(4);
 
@@ -182,7 +214,15 @@ export const MentorshipBooking: React.FC = () => {
         spread: 75,
         origin: { y: 0.6 }
       });
-    }, 1200);
+    } catch (error) {
+      // The sheet is the only record of a booking, so never show a confirmation
+      // we could not actually save — keep the modal open so the user can retry.
+      setSubmitError(
+        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleFocusAreaToggle = (area: string) => {
@@ -931,6 +971,8 @@ export const MentorshipBooking: React.FC = () => {
               <button
                 onClick={() => {
                   setIsSubmitted(false);
+                  setSubmitError("");
+                  setTrxId("");
                   setCurrentStep(1);
                 }}
                 className="text-xs text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 underline font-medium pt-4"
@@ -1134,6 +1176,28 @@ export const MentorshipBooking: React.FC = () => {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* Booking Save Failure Notice */}
+              {submitError && (
+                <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-300 dark:border-rose-500/40 rounded-2xl p-4 text-xs space-y-1.5 animate-fadeIn">
+                  <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400 text-sm">
+                    <X className="w-4 h-4" />
+                    <span>Booking could not be saved</span>
+                  </div>
+                  <p className="text-slate-700 dark:text-slate-300 font-medium">{submitError}</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Your slot is not reserved yet. Press the button again to retry, or message us on{" "}
+                    <a
+                      href="https://wa.me/923292020497"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                    >
+                      WhatsApp
+                    </a>.
+                  </p>
+                </div>
               )}
 
               {/* Submit Payment Action Button */}

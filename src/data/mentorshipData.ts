@@ -1,3 +1,5 @@
+import { withBasePath } from "@/lib/basePath";
+
 export interface Mentor {
   id: string;
   name: string;
@@ -322,7 +324,7 @@ export interface CompanyItem {
 
 export const ALUMNI_COMPANIES: (string | CompanyItem)[] = Array.from({ length: 31 }, (_, i) => ({
   name: `Alumni Partner ${i + 1}`,
-  logo: `/logos/${i + 1}.png`,
+  logo: withBasePath(`/logos/${i + 1}.png`),
 }));
 
 export const FAQS = [
