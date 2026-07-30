@@ -312,26 +312,36 @@ export const MentorshipBooking: React.FC = () => {
                           : "bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/70 shadow-sm cursor-pointer"
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center justify-between mb-4 h-7">
                         <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md border ${track.badgeColor}`}>
                           {track.tag}
                         </span>
-                        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 text-xs font-medium">
+                        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 text-xs font-medium shrink-0">
                           <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           {track.duration}
                         </div>
                       </div>
 
                       <div className="space-y-2 mb-4">
-                        <h4 className="text-lg font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                          {track.title}
-                          {isSelected && !isClosed && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />}
-                          {isClosed && <span className="text-[10px] uppercase font-extrabold bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-500/40 px-2 py-0.5 rounded">Closed</span>}
-                        </h4>
-                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{track.description}</p>
+                        <div className="min-h-[56px] flex items-start justify-between gap-2">
+                          <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
+                            {track.title}
+                          </h4>
+                          {isSelected && !isClosed && (
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                          )}
+                          {isClosed && (
+                            <span className="text-[10px] uppercase font-extrabold bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 px-2 py-0.5 rounded shrink-0 mt-0.5">
+                              Closed
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium min-h-[64px]">
+                          {track.description}
+                        </p>
                       </div>
 
-                      <div className="border-t border-slate-200 dark:border-slate-800/80 pt-3 space-y-1.5 mb-4">
+                      <div className="border-t border-slate-200 dark:border-slate-800/80 pt-3 space-y-1.5 mb-4 min-h-[140px] flex flex-col justify-start">
                         {track.highlights.map((item, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-[12px] text-slate-700 dark:text-slate-300 font-medium">
                             <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isClosed ? "text-slate-400 dark:text-slate-600" : "text-emerald-600 dark:text-emerald-400"}`} />
