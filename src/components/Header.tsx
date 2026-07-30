@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Calendar, Menu, X, ChevronRight, UserCheck } from "lucide-react";
+import { Calendar, Menu, X, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { withBasePath } from "@/lib/basePath";
 
 interface HeaderProps {
   onBookClick?: () => void;
@@ -27,20 +28,14 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
         <div className="flex items-center justify-between h-16 sm:h-20 w-full gap-4">
           
           {/* Brand Logo */}
-          <div className="flex items-center space-x-2.5 cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5 shadow-md shadow-emerald-500/20">
-              <div className="w-full h-full bg-white dark:bg-[#080c14] rounded-[9px] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-0.5 leading-none">
-                Data<span className="text-emerald-600 dark:text-emerald-400">Crumbs</span>
-              </span>
-              <span className="text-[9px] uppercase tracking-wider text-emerald-700 dark:text-emerald-400/90 font-bold mt-0.5">
-                Mentorship 1:1 Hub
-              </span>
-            </div>
+          <div className="flex items-center cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img
+              src={withBasePath("/datacrumbs-white.png")}
+              alt="DataCrumbs"
+              width={608}
+              height={125}
+              className="h-8 sm:h-10 w-auto object-contain object-left"
+            />
           </div>
 
           {/* Desktop Navigation Links */}
