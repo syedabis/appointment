@@ -249,6 +249,69 @@ export const TESTIMONIALS: Testimonial[] = [
     quote: "Syed Abis reviewed my client pitch deck in our AI & Freelance Blueprint slot. I closed a $2,500 automation retainer with a US client right after applying his recommendations.",
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200",
     highlight: "$2.5k Client Closed"
+  },
+  {
+    name: "Bilal Siddiqui",
+    roleBefore: "Software Intern",
+    roleAfter: "GenAI System Engineer",
+    company: "DataStax Partner",
+    quote: "The 1-on-1 feedback on Vector databases, LangChain memory, and hybrid search optimization saved me weeks of trial & error. Highly recommended for serious devs!",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
+    highlight: "GenAI Production Deployment"
+  },
+  {
+    name: "Sana Fatima",
+    roleBefore: "CS Graduate",
+    roleAfter: "Computer Vision Researcher",
+    company: "VisionTech Labs",
+    quote: "Syed Abis gave me exact guidance on framing my YOLO and OpenCV GitHub repos to stand out to international AI recruiters. Got selected for a funded AI fellowship!",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+    highlight: "Funded AI Research Fellowship"
+  },
+  {
+    name: "Usman Chaudhry",
+    roleBefore: "Manual QA Tester",
+    roleAfter: "n8n Workflow Automation Lead",
+    company: "AutomationX",
+    quote: "I was struggling to pitch complex n8n agentic workflows to enterprise clients. Syed Abis shared a structured pricing framework that doubled my project rates instantly.",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200",
+    highlight: "2x Freelance Hourly Rate"
+  },
+  {
+    name: "Mariam Tariq",
+    roleBefore: "Data Entry Operator",
+    roleAfter: "Associate Machine Learning Engineer",
+    company: "Techlogix",
+    quote: "The resume rewrite & keyword optimization in Track 1 bypassed ATS filters seamlessly. I went from zero responses to 4 tech interview invitations in two weeks!",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+    highlight: "4 Interview Invitations in 14 Days"
+  },
+  {
+    name: "Farhan Ali",
+    roleBefore: "Backend Developer",
+    roleAfter: "MLOps & Cloud Infrastructure Specialist",
+    company: "CloudAI Solutions",
+    quote: "Syed Abis's architecture breakdown for containerized ML model deployment gave me total confidence during my technical interview round. Landed the role with 40% hike!",
+    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=200",
+    highlight: "40% Salary Increase"
+  },
+  {
+    name: "Zubair Hassan",
+    roleBefore: "Junior Python Programmer",
+    roleAfter: "AI Agent Architect",
+    company: "BotScale Systems",
+    quote: "1-on-1 strategy sessions at DataCrumbs are gold. We mapped out autonomous multi-agent systems using CrewAI, which became the cornerstone of my current engineering job.",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    highlight: "Multi-Agent System Deployed"
+  },
+  {
+    name: "Hira Mustafa",
+    roleBefore: "Final Year Student",
+    roleAfter: "AI Product Consultant",
+    company: "NextGen Systems",
+    quote: "Syed Abis showed me how to turn my university thesis into a commercial AI MVP. The clarity and actionable roadmap from a single session was priceless.",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200",
+    highlight: "Thesis Converted to Paid MVP"
   }
 ];
 

@@ -19,7 +19,7 @@ export const AlumniNetwork: React.FC = () => {
         </div>
 
         {/* Logos Marquee / Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4">
           {ALUMNI_COMPANIES.map((company, index) => {
             const companyName = typeof company === "string" ? company : company.name;
             const logoUrl = typeof company === "object" ? company.logo : undefined;
@@ -27,13 +27,13 @@ export const AlumniNetwork: React.FC = () => {
             return (
               <div
                 key={index}
-                className="w-[140px] sm:w-[160px] h-[54px] px-3 sm:px-4 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-sm flex items-center justify-center text-center overflow-hidden"
+                className="w-[280px] sm:w-[320px] h-[108px] px-6 sm:px-8 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-bold text-lg sm:text-xl tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-md flex items-center justify-center text-center overflow-hidden"
               >
                 {logoUrl ? (
                   <img
                     src={logoUrl}
                     alt={`${companyName} logo`}
-                    className="max-h-9 sm:max-h-10 max-w-[135px] object-contain transition-transform duration-200"
+                    className="max-h-[72px] sm:max-h-[80px] max-w-[270px] object-contain transition-transform duration-200"
                     onError={(e) => {
                       // If image fails to load, hide image and show text
                       (e.currentTarget as HTMLElement).style.display = "none";

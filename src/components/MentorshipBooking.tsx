@@ -57,10 +57,10 @@ export const MentorshipBooking: React.FC = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
 
   // Selection states
-  const [selectedTrack, setSelectedTrack] = useState<SessionTrack>(SESSION_TRACKS[0]);
+  const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMentor, setSelectedMentor] = useState<Mentor>(MENTORS[0]);
-  
+
   // Date & Time selection states
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTimezone, setSelectedTimezone] = useState<string>("PKT");
@@ -229,17 +229,30 @@ export const MentorshipBooking: React.FC = () => {
               const isActive = currentStep === step.num;
               const isCompleted = currentStep > step.num || isSubmitted;
 
+              // Step 1 is always unlocked
+              // Step 2 is unlocked ONLY if user has selected a valid non-closed track
+              // Step 3 is unlocked ONLY if user has selected a track AND selected a time slot
+              const isUnlocked =
+                step.num === 1 ||
+                (step.num === 2 && selectedTrack !== null && !selectedTrack.isClosed) ||
+                (step.num === 3 && selectedTrack !== null && !selectedTrack.isClosed && selectedSlot !== null);
+
+              const isDisabled = isSubmitted || !isUnlocked;
+
               return (
                 <button
                   key={step.num}
-                  disabled={isSubmitted || step.num > currentStep + 1}
-                  onClick={() => !isSubmitted && setCurrentStep(step.num)}
+                  disabled={isDisabled}
+                  onClick={() => !isDisabled && setCurrentStep(step.num)}
+                  title={!isUnlocked ? "Please select a session track first to unlock this step" : ""}
                   className={`flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 rounded-xl border text-xs sm:text-sm font-bold transition-all ${
                     isActive
                       ? "bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-400 shadow-lg shadow-emerald-500/10"
                       : isCompleted
-                      ? "bg-emerald-50 dark:bg-slate-900 border-emerald-400 dark:border-emerald-500/40 text-slate-900 dark:text-slate-300 hover:border-emerald-500"
-                      : "bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                      ? "bg-emerald-50 dark:bg-slate-900 border-emerald-400 dark:border-emerald-500/40 text-slate-900 dark:text-slate-300 hover:border-emerald-500 cursor-pointer"
+                      : isUnlocked
+                      ? "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-400 cursor-pointer"
+                      : "bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 opacity-60 cursor-not-allowed"
                   }`}
                 >
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold ${
@@ -247,7 +260,9 @@ export const MentorshipBooking: React.FC = () => {
                       ? "bg-emerald-500 text-slate-950"
                       : isCompleted
                       ? "bg-emerald-200 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      : isUnlocked
+                      ? "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      : "bg-slate-200/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600"
                   }`}>
                     {isCompleted ? <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : step.num}
                   </div>
@@ -279,7 +294,7 @@ export const MentorshipBooking: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {SESSION_TRACKS.map((track) => {
-                  const isSelected = selectedTrack.id === track.id;
+                  const isSelected = selectedTrack?.id === track.id;
                   const isClosed = track.isClosed;
                   return (
                     <div
@@ -342,10 +357,22 @@ export const MentorshipBooking: React.FC = () => {
 
               <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
                 <div className="text-xs text-slate-600 dark:text-slate-400 hidden sm:block">
-                  Selected Track: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{selectedTrack.title}</span> ({selectedTrack.duration})
+                  {selectedTrack ? (
+                    <span>Selected Track: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{selectedTrack.title}</span> ({selectedTrack.duration})</span>
+                  ) : (
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold">⚠️ Select a track card above to unlock next steps</span>
+                  )}
                 </div>
-                {selectedTrack.isClosed ? (
-                  <div className="flex items-center gap-3">
+
+                {!selectedTrack ? (
+                  <button
+                    disabled
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm cursor-not-allowed ml-auto"
+                  >
+                    Select 1 Track Above to Continue
+                  </button>
+                ) : selectedTrack.isClosed ? (
+                  <div className="flex items-center gap-3 ml-auto">
                     <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Mock Interview registration is closed. Select Track 1 or 2.</span>
                     <button
                       disabled
@@ -451,7 +478,7 @@ export const MentorshipBooking: React.FC = () => {
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     Select Available Time Slot for {selectedDate} ({selectedTimezone})
                   </label>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400">Duration: <strong className="text-emerald-600 dark:text-emerald-400">{selectedTrack.duration}</strong></span>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-400">Duration: <strong className="text-emerald-600 dark:text-emerald-400">{selectedTrack?.duration}</strong></span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -635,7 +662,7 @@ export const MentorshipBooking: React.FC = () => {
               <div className="bg-white dark:bg-slate-900/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs shadow-sm">
                 <div>
                   <span className="text-slate-600 dark:text-slate-400 block font-medium">Session Track:</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">{selectedTrack.title}</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">{selectedTrack?.title}</span>
                 </div>
                 <div>
                   <span className="text-slate-600 dark:text-slate-400 block font-medium">Mentor:</span>
@@ -845,7 +872,7 @@ export const MentorshipBooking: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-slate-600 dark:text-slate-400 block font-medium">Session Track</span>
-                    <span className="text-emerald-700 dark:text-emerald-400 font-bold">{selectedTrack.title}</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-bold">{selectedTrack?.title}</span>
                   </div>
                   <div>
                     <span className="text-slate-600 dark:text-slate-400 block font-medium">Date & Time</span>
@@ -871,7 +898,7 @@ export const MentorshipBooking: React.FC = () => {
               {/* ACTION BUTTONS */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
                 <a
-                  href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=DataCrumbs+Mentorship+with+${encodeURIComponent(selectedMentor.name)}&details=1-on-1+Session+Track:+${encodeURIComponent(selectedTrack.title)}`}
+                  href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=DataCrumbs+Mentorship+with+${encodeURIComponent(selectedMentor.name)}&details=1-on-1+Session+Track:+${encodeURIComponent(selectedTrack?.title || "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all"
@@ -937,7 +964,7 @@ export const MentorshipBooking: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-950/80 border border-emerald-300 dark:border-emerald-500/30 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-2">
                   <span>Selected Session Track</span>
-                  <span className="text-slate-900 dark:text-white font-bold">{selectedTrack.title}</span>
+                  <span className="text-slate-900 dark:text-white font-bold">{selectedTrack?.title}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-2">
                   <span>Assigned Mentor</span>
@@ -950,7 +977,7 @@ export const MentorshipBooking: React.FC = () => {
                 <div className="flex items-center justify-between text-sm pt-1">
                   <span className="text-slate-800 dark:text-slate-300 font-bold">Total Amount Due:</span>
                   <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-                    {verifiedStudent ? "Rs 0 (Student Pass)" : selectedTrack.price}
+                    {verifiedStudent ? "Rs 0 (Student Pass)" : selectedTrack?.price}
                   </span>
                 </div>
               </div>
