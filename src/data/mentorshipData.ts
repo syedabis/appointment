@@ -134,7 +134,7 @@ export const SESSION_TRACKS: SessionTrack[] = [
     title: "1. LinkedIn, Resume and Portfolio",
     duration: "15 Mins",
     tag: "Most Popular",
-    badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30",
     description: "Transform your LinkedIn profile, ATS resume, and GitHub portfolio into high-conversion showcase assets for AI recruiters & clients.",
     highlights: [
       "Live ATS resume roast & structural rewrite suggestions",
@@ -150,7 +150,7 @@ export const SESSION_TRACKS: SessionTrack[] = [
     title: "2. Career Advisory, Freelancing & AI Blueprint",
     duration: "15 Mins",
     tag: "Freelance & Career",
-    badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    badgeColor: "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30",
     description: "Personalized 1-on-1 strategy for freelancing & career growth. Build custom GenAI/n8n automation blueprints, close high-ticket clients, and map your AI career transition.",
     highlights: [
       "Freelance client acquisition & Upwork/cold outreach playbook",
@@ -166,7 +166,7 @@ export const SESSION_TRACKS: SessionTrack[] = [
     title: "3. Mock Interviews",
     duration: "15 Mins",
     tag: "Registration Closed",
-    badgeColor: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+    badgeColor: "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 border-rose-300 dark:border-rose-500/30",
     description: "1-on-1 mock technical interview simulation with Syed Abis covering GenAI system design, Python algorithms, SQL live coding, and STAR behavioral drills.",
     highlights: [
       "Live system design framing (RAG pipelines / ML infrastructure)",

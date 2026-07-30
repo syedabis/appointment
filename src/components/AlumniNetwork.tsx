@@ -18,8 +18,8 @@ export const AlumniNetwork: React.FC = () => {
           </h3>
         </div>
 
-        {/* Logos Marquee / Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4">
+        {/* Logos Grid - 4 cards per row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-4 max-w-6xl mx-auto">
           {ALUMNI_COMPANIES.map((company, index) => {
             const companyName = typeof company === "string" ? company : company.name;
             const logoUrl = typeof company === "object" ? company.logo : undefined;
@@ -27,13 +27,13 @@ export const AlumniNetwork: React.FC = () => {
             return (
               <div
                 key={index}
-                className="w-[280px] sm:w-[320px] h-[108px] px-6 sm:px-8 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-bold text-lg sm:text-xl tracking-wide hover:border-emerald-500 hover:scale-105 transition-all shadow-md flex items-center justify-center text-center overflow-hidden"
+                className="w-full h-[84px] sm:h-[92px] px-5 sm:px-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-bold text-base sm:text-lg tracking-wide hover:border-emerald-500 hover:scale-[1.03] transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center text-center overflow-hidden group"
               >
                 {logoUrl ? (
                   <img
                     src={logoUrl}
                     alt={`${companyName} logo`}
-                    className="max-h-[72px] sm:max-h-[80px] max-w-[270px] object-contain transition-transform duration-200"
+                    className="max-h-[54px] sm:max-h-[60px] max-w-[190px] object-contain group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       // If image fails to load, hide image and show text
                       (e.currentTarget as HTMLElement).style.display = "none";
