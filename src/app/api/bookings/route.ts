@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { appendBookingRow } from "@/lib/googleSheets";
+import { checkStudentEligibility } from "@/lib/lmsEligibility";
 import { BookingSubmission } from "@/types/booking";
 
 // googleapis needs the Node runtime; it does not run on the edge.
@@ -39,6 +40,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
   }
 
+  // Re-check eligibility here rather than trusting the browser. The UI blocks
+  // ineligible students, but this endpoint is reachable directly with curl.
+  let eligibility;
+  try {
+    eligibility = await checkStudentEligibility(email);
+  } catch (error) {
+    console.error("[bookings] Eligibility check failed:", error);
+    return NextResponse.json(
+      { error: "We could not verify your email right now. Please try again shortly." },
+      { status: 503 }
+    );
+  }
+
+  if (!eligibility.eligible || !eligibility.student) {
+    return NextResponse.json(
+      { error: "This email is not approved for mentorship booking." },
+      { status: 403 }
+    );
+  }
+
   // The booking id and timestamp are assigned here rather than in the browser so
   // the sheet is the authority on when a booking was actually recorded.
   const bookingId = `DC-101-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -47,23 +68,24 @@ export async function POST(request: Request) {
     bookingId,
     submittedAt: new Date().toISOString(),
     trackTitle: text(body.trackTitle),
-    amount: text(body.amount),
+    amount: "Rs 0 (Student Pass)",
     mentorName: text(body.mentorName),
     date: text(body.date),
     slot: text(body.slot),
     timezone: text(body.timezone),
-    fullName: text(body.fullName),
+    // Identity fields come from the LMS, not the form, so they cannot be spoofed.
+    fullName: eligibility.student.fullName || text(body.fullName),
     email,
-    phone: text(body.phone),
+    phone: text(body.phone) || eligibility.student.phone,
     careerStatus: text(body.careerStatus),
     portfolioUrl: text(body.portfolioUrl),
     goals: text(body.goals),
     focusAreas: Array.isArray(body.focusAreas) ? body.focusAreas.map(text).filter(Boolean) : [],
-    rollNo: text(body.rollNo),
-    cohort: text(body.cohort),
-    isEnrolledVerified: body.isEnrolledVerified === true,
-    paymentMethod: text(body.paymentMethod),
-    trxId: text(body.trxId),
+    rollNo: "",
+    cohort: eligibility.student.cohort,
+    isEnrolledVerified: true,
+    paymentMethod: "Student Free Pass",
+    trxId: "",
   };
 
   try {

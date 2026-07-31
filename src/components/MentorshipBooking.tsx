@@ -10,10 +10,9 @@ import {
   SessionTrack, 
   Mentor, 
   TimeSlot,
-  fetchStudentByRollNo,
-  EnrolledStudent
 } from "@/data/mentorshipData";
 import { withBasePath } from "@/lib/basePath";
+import type { VerifiedStudent } from "@/lib/lmsEligibility";
 import { getPakistanNow, getSlotStartMinutes, BOOKING_BUFFER_MINUTES } from "@/lib/pakistanTime";
 import { 
   Calendar as CalendarIcon, 
@@ -49,6 +48,13 @@ import {
   Check
 } from "lucide-react";
 
+/**
+ * Paid booking for non-students is switched off: only LMS-verified students can
+ * book, and they book for free. The payment UI below is intentionally left in
+ * place so it can be re-enabled later by flipping this to true.
+ */
+const ALLOW_PAID_BOOKING = false;
+
 export const MentorshipBooking: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   
@@ -70,9 +76,10 @@ export const MentorshipBooking: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
 
   // Student Roll Number & Verification state
-  const [rollNoInput, setRollNoInput] = useState<string>("");
-  const [verifiedStudent, setVerifiedStudent] = useState<EnrolledStudent | null>(null);
+  const [emailInput, setEmailInput] = useState<string>("");
+  const [verifiedStudent, setVerifiedStudent] = useState<VerifiedStudent | null>(null);
   const [fetchError, setFetchError] = useState<string>("");
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
 
   // Student details state
   const [studentDetails, setStudentDetails] = useState({
@@ -154,30 +161,53 @@ export const MentorshipBooking: React.FC = () => {
     return m.category === selectedCategory;
   });
 
-  // Roll Number auto-fetch logic
-  const handleFetchStudentData = (rollNoToFetch?: string) => {
-    const query = rollNoToFetch || rollNoInput;
-    if (!query.trim()) {
-      setFetchError("Please enter your Student Roll No or ID.");
+  // Looks the email up against the LMS through our own server route, so the
+  // LMS key stays server-side and the student list cannot be enumerated.
+  const handleVerifyStudent = async () => {
+    const email = emailInput.trim();
+    if (!email) {
+      setFetchError("Please enter your registered student email.");
       return;
     }
 
-    const student = fetchStudentByRollNo(query);
-    if (student) {
-      setVerifiedStudent(student);
-      setFetchError("");
+    setIsVerifying(true);
+    setFetchError("");
+
+    try {
+      const response = await fetch(withBasePath("/api/verify-student"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setVerifiedStudent(null);
+        setFetchError(result.error || "Could not verify this email. Please try again.");
+        return;
+      }
+
+      if (!result.eligible || !result.student) {
+        setVerifiedStudent(null);
+        setFetchError(
+          "This email is not approved for mentorship booking. Please use the email registered on your DataCrumbs LMS account, or contact support."
+        );
+        return;
+      }
+
+      setVerifiedStudent(result.student);
       setStudentDetails(prev => ({
         ...prev,
-        fullName: student.fullName,
-        email: student.email,
-        phone: student.phone,
-        status: student.status,
-        portfolioUrl: student.portfolioUrl,
-        focusAreas: student.focusAreas.length > 0 ? student.focusAreas : prev.focusAreas
+        fullName: result.student.fullName || prev.fullName,
+        email: result.student.email,
+        phone: result.student.phone || prev.phone
       }));
-    } else {
+    } catch {
       setVerifiedStudent(null);
-      setFetchError("Roll No not found. Please enter details manually or check format.");
+      setFetchError("Network problem while verifying. Please check your connection and try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -197,12 +227,21 @@ export const MentorshipBooking: React.FC = () => {
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentDetails.fullName || !studentDetails.email) {
-      alert("Please fill in your name and email address.");
+
+    // Only verified students can book. The server re-checks this too, so this
+    // is a UX guard rather than the actual security boundary.
+    if (!verifiedStudent) {
+      setFetchError("Please verify your student email before confirming the booking.");
       return;
     }
 
-    // Launch Fee Submission Payment Modal
+    if (!studentDetails.fullName || !studentDetails.email) {
+      setFetchError("Please fill in your name and email address.");
+      return;
+    }
+
+    // Confirmation summary. No fee is due for verified students; the payment
+    // options behind ALLOW_PAID_BOOKING stay switched off for now.
     setShowPaymentModal(true);
   };
 
@@ -216,7 +255,6 @@ export const MentorshipBooking: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           trackTitle: selectedTrack?.title,
-          amount: verifiedStudent ? "Rs 0 (Student Pass)" : selectedTrack?.price,
           mentorName: selectedMentor.name,
           date: selectedDate,
           slot: selectedSlot?.time,
@@ -227,12 +265,9 @@ export const MentorshipBooking: React.FC = () => {
           careerStatus: studentDetails.status,
           portfolioUrl: studentDetails.portfolioUrl,
           goals: studentDetails.goals,
-          focusAreas: studentDetails.focusAreas,
-          rollNo: verifiedStudent?.rollNo ?? "",
-          cohort: verifiedStudent?.cohort ?? "",
-          isEnrolledVerified: Boolean(verifiedStudent),
-          paymentMethod: verifiedStudent ? "Student Free Pass" : paymentMethod,
-          trxId: verifiedStudent ? "" : trxId
+          focusAreas: studentDetails.focusAreas
+          // Identity, cohort, amount and payment method are set by the server
+          // from the LMS lookup — sending them from here would be untrusted.
         })
       });
 
@@ -664,81 +699,77 @@ export const MentorshipBooking: React.FC = () => {
                   Step 4: Student Information & Meeting Preparation
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                  Are you an enrolled DataCrumbs student? Enter your Roll No below to auto-fetch your data & activate your free pass.
+                  Enter the email address registered on your DataCrumbs LMS account to verify your enrollment and unlock your free session.
                 </p>
               </div>
 
-              {/* ENROLLED STUDENT ROLL NO AUTO-FETCH BOX */}
+              {/* STUDENT EMAIL VERIFICATION BOX */}
               <div className="bg-emerald-50/80 dark:bg-gradient-to-r dark:from-emerald-950/40 dark:via-slate-900 dark:to-cyan-950/40 border border-emerald-300 dark:border-emerald-500/30 rounded-2xl p-5 space-y-3 shadow-md">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
                     <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    Enrolled Student Roll No Auto-Fetch
+                    Student Email Verification
                   </label>
                   <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium bg-cyan-100 dark:bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-300 dark:border-cyan-500/30">
-                    Fast Auto-Fill
+                    Required
                   </span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                   <div className="relative w-full">
                     <input
-                      type="text"
-                      placeholder="Enter Student Roll No (e.g. DC-2024-8841)"
-                      value={rollNoInput}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="Enter your LMS email (e.g. you@example.com)"
+                      value={emailInput}
+                      disabled={isVerifying}
                       onChange={(e) => {
-                        setRollNoInput(e.target.value);
-                        if (e.target.value.length >= 7) {
-                          handleFetchStudentData(e.target.value);
+                        setEmailInput(e.target.value);
+                        // Any edit invalidates a previous result.
+                        if (verifiedStudent) setVerifiedStudent(null);
+                        if (fetchError) setFetchError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleVerifyStudent();
                         }
                       }}
-                      className="w-full bg-white dark:bg-slate-900 border border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors uppercase font-mono font-bold shadow-sm"
+                      className="w-full bg-white dark:bg-slate-900 border border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors shadow-sm disabled:opacity-60"
                     />
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => handleFetchStudentData()}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 whitespace-nowrap flex items-center justify-center gap-2 transition-all"
+                    onClick={() => handleVerifyStudent()}
+                    disabled={isVerifying}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 whitespace-nowrap flex items-center justify-center gap-2 transition-all disabled:opacity-70"
                   >
-                    <Zap className="w-4 h-4 text-slate-950" />
-                    Fetch Profile Data
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 text-slate-950" />
+                        Verify Email
+                      </>
+                    )}
                   </button>
-                </div>
-
-                {/* Pre-saved Student Roll No Sample Pills */}
-                <div className="flex flex-wrap items-center gap-2 text-[11px] pt-1">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Quick Test Roll Nos:</span>
-                  {[
-                    { roll: "DC-2024-8841", label: "Ali Raza" },
-                    { roll: "DC-2024-1052", label: "Fatima Noor" },
-                    { roll: "DC-2024-9932", label: "Muhammad Bilal" },
-                    { roll: "DC-2024-4410", label: "Sarah Ahmed" }
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item.roll}
-                      onClick={() => {
-                        setRollNoInput(item.roll);
-                        handleFetchStudentData(item.roll);
-                      }}
-                      className="bg-white dark:bg-slate-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:text-emerald-700 dark:hover:text-emerald-300 text-slate-800 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 font-mono text-[10px] transition-colors shadow-sm"
-                    >
-                      {item.roll} ({item.label})
-                    </button>
-                  ))}
                 </div>
 
                 {/* Verification Status Banner */}
                 {verifiedStudent && (
                   <div className="bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-400 dark:border-emerald-500/50 rounded-xl p-3.5 flex items-center justify-between text-xs text-slate-900 dark:text-slate-200 animate-fadeIn">
                     <div className="flex items-center gap-3">
-                      <BadgeCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 animate-pulse" />
+                      <BadgeCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <div>
                         <div className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                           <span>{verifiedStudent.fullName}</span>
                           <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded">
-                            ENROLLED VERIFIED ✓
+                            VERIFIED ✓
                           </span>
                         </div>
                         <p className="text-emerald-800 dark:text-emerald-300/90 text-[11px] font-medium">
@@ -747,7 +778,7 @@ export const MentorshipBooking: React.FC = () => {
                       </div>
                     </div>
                     <span className="text-[10px] font-mono text-emerald-800 dark:text-emerald-400 bg-white dark:bg-slate-900 px-2.5 py-1 rounded border border-emerald-300 dark:border-emerald-500/40 hidden sm:inline shadow-sm">
-                      ID: {verifiedStudent.rollNo}
+                      {verifiedStudent.email}
                     </span>
                   </div>
                 )}
@@ -844,7 +875,6 @@ export const MentorshipBooking: React.FC = () => {
                 <div className="sm:col-span-2 space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                     <span>GitHub / Portfolio / Resume Link (Optional but Recommended)</span>
-                    {verifiedStudent?.portfolioUrl && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Auto-filled</span>}
                   </label>
                   <input
                     type="url"
@@ -913,10 +943,16 @@ export const MentorshipBooking: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-base shadow-xl shadow-emerald-500/25 hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={!verifiedStudent}
+                  title={!verifiedStudent ? "Verify your student email first" : ""}
+                  className={`px-8 py-4 rounded-xl font-black text-base shadow-xl transition-all flex items-center justify-center gap-2 ${
+                    verifiedStudent
+                      ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 shadow-emerald-500/25 hover:scale-105 cursor-pointer"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shadow-none cursor-not-allowed"
+                  }`}
                 >
-                  <Sparkles className="w-5 h-5 text-slate-950" />
-                  Confirm & Reserve 1-on-1 Slot
+                  <Sparkles className="w-5 h-5" />
+                  {verifiedStudent ? "Confirm & Reserve 1-on-1 Slot" : "Verify Your Email to Continue"}
                 </button>
               </div>
             </form>
@@ -962,7 +998,7 @@ export const MentorshipBooking: React.FC = () => {
                       {verifiedStudent && <BadgeCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
                     </span>
                     {verifiedStudent && (
-                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono block">Roll: {verifiedStudent.rollNo}</span>
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono block">{verifiedStudent.email}</span>
                     )}
                   </div>
                   <div>
@@ -1007,7 +1043,7 @@ export const MentorshipBooking: React.FC = () => {
                 </a>
 
                 <a
-                  href={`https://wa.me/923292020497?text=Hi!+I+just+booked+my+1-on-1+mentorship+slot+(Booking+ID:+${bookingId}${verifiedStudent ? `,+Roll+No:+${verifiedStudent.rollNo}` : ""})+with+${encodeURIComponent(selectedMentor.name)}+for+${encodeURIComponent(selectedDate)}`}
+                  href={`https://wa.me/923292020497?text=Hi!+I+just+booked+my+1-on-1+mentorship+slot+(Booking+ID:+${bookingId})+with+${encodeURIComponent(selectedMentor.name)}+for+${encodeURIComponent(selectedDate)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm border border-slate-700 flex items-center justify-center gap-2 transition-all"
@@ -1084,14 +1120,14 @@ export const MentorshipBooking: React.FC = () => {
               </div>
 
               {/* Verified Student Notice */}
-              {verifiedStudent ? (
+              {verifiedStudent || !ALLOW_PAID_BOOKING ? (
                 <div className="bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/40 rounded-2xl p-4 text-xs text-emerald-900 dark:text-emerald-300 space-y-1">
                   <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400 text-sm">
                     <BadgeCheck className="w-5 h-5" />
                     <span>DataCrumbs Student Free Pass Verified!</span>
                   </div>
                   <p className="text-slate-700 dark:text-slate-300 font-medium">
-                    Your Roll No <strong className="text-slate-900 dark:text-white">{verifiedStudent.rollNo}</strong> includes 100% free mentorship sessions. No fee payment required.
+                    Your enrolled account <strong className="text-slate-900 dark:text-white">{verifiedStudent?.email}</strong> includes 100% free mentorship sessions. No fee payment required.
                   </p>
                 </div>
               ) : (
