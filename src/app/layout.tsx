@@ -27,13 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark scroll-smooth ${plusJakartaSans.variable}`} suppressHydrationWarning>
-      <body className={`${plusJakartaSans.className} bg-[#080c14] text-slate-100 antialiased selection:bg-emerald-500 selection:text-black`}>
+    <html lang="en" className={`light scroll-smooth ${plusJakartaSans.variable}`} suppressHydrationWarning>
+      <body className={`${plusJakartaSans.className} bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 antialiased selection:bg-emerald-500 selection:text-black`}>
         {/* Restore the saved theme before first paint so there is no flash of
-            the wrong theme, and so the toggle never depends on hydration. */}
+            the wrong theme, and so the toggle never depends on hydration.
+            Light is the default; only an explicit "dark" preference overrides it. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("datacrumbs-theme")==="light"?"light":"dark";var r=document.documentElement;r.classList.remove("light","dark");r.classList.add(t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("datacrumbs-theme")==="dark"?"dark":"light";var r=document.documentElement;r.classList.remove("light","dark");r.classList.add(t);}catch(e){}})();`,
           }}
         />
         {children}

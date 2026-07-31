@@ -18,7 +18,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col font-sans">
+    <main className="min-h-screen bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 flex flex-col font-sans">
       <Header onBookClick={scrollToBooking} />
       <Hero onStartBooking={scrollToBooking} />
       <MentorshipBooking />
