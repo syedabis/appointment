@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Phone, Mail, MapPin, ExternalLink } from "lucide-react";
+import { Phone, Mail, MapPin, ExternalLink } from "lucide-react";
+import { withBasePath } from "@/lib/basePath";
 
 export const Footer: React.FC = () => {
   return (
@@ -12,15 +13,23 @@ export const Footer: React.FC = () => {
           
           {/* Brand Col */}
           <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center space-x-3">
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5">
-                <div className="w-full h-full bg-white dark:bg-[#080c14] rounded-[10px] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-              </div>
-              <span className="text-xl font-black text-slate-900 dark:text-white">
-                Data<span className="text-emerald-600 dark:text-emerald-400">Crumbs</span>
-              </span>
+            {/* Both variants ship and are swapped by CSS off the html.dark class,
+                so the right one is correct from the very first paint. */}
+            <div className="flex items-center">
+              <img
+                src={withBasePath("/datacrumbs-white.png")}
+                alt="DataCrumbs"
+                width={608}
+                height={125}
+                className="hidden dark:block h-9 w-auto object-contain object-left"
+              />
+              <img
+                src={withBasePath("/datacrumbs-light.png")}
+                alt="DataCrumbs"
+                width={200}
+                height={61}
+                className="block dark:hidden h-9 w-auto object-contain object-left"
+              />
             </div>
 
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
