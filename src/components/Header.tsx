@@ -29,12 +29,22 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
           
           {/* Brand Logo */}
           <div className="flex items-center cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            {/* Both variants ship and are swapped by CSS off the html.dark class,
+                so the right one is correct from the very first paint. The white
+                wordmark is unreadable on the light header, and vice versa. */}
             <img
               src={withBasePath("/datacrumbs-white.png")}
               alt="DataCrumbs"
               width={608}
               height={125}
-              className="h-8 sm:h-10 w-auto object-contain object-left"
+              className="hidden dark:block h-8 sm:h-10 w-auto object-contain object-left"
+            />
+            <img
+              src={withBasePath("/datacrumbs-light.png")}
+              alt="DataCrumbs"
+              width={200}
+              height={61}
+              className="block dark:hidden h-8 sm:h-10 w-auto object-contain object-left"
             />
           </div>
 

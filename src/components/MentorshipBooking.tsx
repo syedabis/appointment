@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import confetti from "canvas-confetti";
 import { 
   SESSION_TRACKS, 
@@ -14,6 +14,7 @@ import {
   EnrolledStudent
 } from "@/data/mentorshipData";
 import { withBasePath } from "@/lib/basePath";
+import { getPakistanNow, getSlotStartMinutes, BOOKING_BUFFER_MINUTES } from "@/lib/pakistanTime";
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -88,27 +89,64 @@ export const MentorshipBooking: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [bookingId, setBookingId] = useState<string>("");
 
-  // Dates generator (Next 14 days)
-  const [availableDates, setAvailableDates] = useState<{ dayName: string; dayNum: number; fullDate: string; isWeekend: boolean }[]>([]);
+  // Dates generator (Next 14 days, anchored to Pakistan's calendar)
+  const [availableDates, setAvailableDates] = useState<{ dayName: string; dayNum: number; fullDate: string; isWeekend: boolean; isToday: boolean }[]>([]);
+
+  // Pakistan wall-clock minutes since midnight, refreshed so slots expire while
+  // the page sits open. Null until the first client render.
+  const [pakistanMinutesNow, setPakistanMinutesNow] = useState<number | null>(null);
 
   useEffect(() => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
-      const dayNum = d.getDate();
-      const monthName = d.toLocaleDateString("en-US", { month: "short" });
-      const fullDate = `${dayName}, ${monthName} ${dayNum}`;
-      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-      dates.push({ dayName, dayNum, fullDate, isWeekend });
-    }
-    setAvailableDates(dates);
+    const buildDates = () => {
+      const now = getPakistanNow();
+      setPakistanMinutesNow(now.minutesSinceMidnight);
+
+      const dates = [];
+      for (let i = 0; i < 14; i++) {
+        // UTC-anchored so the label never drifts by a day on the visitor's device.
+        const d = new Date(Date.UTC(now.year, now.month - 1, now.day + i));
+        const dayName = d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+        const dayNum = d.getUTCDate();
+        const monthName = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+        const fullDate = `${dayName}, ${monthName} ${dayNum}`;
+        const isWeekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
+        dates.push({ dayName, dayNum, fullDate, isWeekend, isToday: i === 0 });
+      }
+      setAvailableDates(dates);
+      return dates;
+    };
+
+    const dates = buildDates();
     if (!selectedDate && dates.length > 0) {
       setSelectedDate(dates[1].fullDate); // Default to tomorrow
     }
+
+    // Re-evaluate every minute so a slot disappears once its buffer elapses,
+    // and so the strip rolls over if the page is left open past midnight.
+    const timer = setInterval(buildDates, 60_000);
+    return () => clearInterval(timer);
   }, []);
+
+  const todayFullDate = availableDates.find(d => d.isToday)?.fullDate;
+  const isTodaySelected = todayFullDate !== undefined && selectedDate === todayFullDate;
+
+  // On today, drop any slot that already started or begins within the buffer.
+  const visibleSlots = useMemo(() => {
+    if (!isTodaySelected || pakistanMinutesNow === null) return TIME_SLOTS;
+    const cutoff = pakistanMinutesNow + BOOKING_BUFFER_MINUTES;
+    return TIME_SLOTS.filter(slot => {
+      const startsAt = getSlotStartMinutes(slot.time);
+      return !Number.isNaN(startsAt) && startsAt >= cutoff;
+    });
+  }, [isTodaySelected, pakistanMinutesNow]);
+
+  // If the chosen slot just expired, or the date changed, drop the stale selection
+  // so the user cannot advance with a slot that is no longer offered.
+  useEffect(() => {
+    if (selectedSlot && !visibleSlots.some(slot => slot.time === selectedSlot.time)) {
+      setSelectedSlot(null);
+    }
+  }, [visibleSlots, selectedSlot]);
 
   // Filtered mentors list based on selected category
   const filteredMentors = MENTORS.filter(m => {
@@ -531,8 +569,18 @@ export const MentorshipBooking: React.FC = () => {
                   <span className="text-[11px] text-slate-600 dark:text-slate-400">Duration: <strong className="text-emerald-600 dark:text-emerald-400">{selectedTrack?.duration}</strong></span>
                 </div>
 
+                {isTodaySelected && visibleSlots.length === 0 ? (
+                  <div className="rounded-2xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-6 text-center space-y-1">
+                    <p className="text-sm font-bold text-amber-900 dark:text-amber-300">
+                      No slots left today
+                    </p>
+                    <p className="text-xs text-amber-800 dark:text-amber-200/80 font-medium">
+                      Today&apos;s sessions have finished. Please pick another date above.
+                    </p>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {TIME_SLOTS.map((slot, index) => {
+                  {visibleSlots.map((slot, index) => {
                     const isSelected = selectedSlot?.time === slot.time;
                     return (
                       <button
@@ -566,6 +614,7 @@ export const MentorshipBooking: React.FC = () => {
                     );
                   })}
                 </div>
+                )}
               </div>
 
               {selectedSlot && (
