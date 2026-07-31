@@ -796,18 +796,25 @@ export const MentorshipBooking: React.FC = () => {
                   Step 4: Student Information & Meeting Preparation
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                  Enter the email address registered on your DataCrumbs LMS account to verify your enrollment and unlock your free session.
+                  Free 1-on-1 sessions are for enrolled DataCrumbs LMS students. Verify your LMS email below to continue.
                 </p>
               </div>
 
               {/* STUDENT EMAIL VERIFICATION BOX */}
               <div className="bg-emerald-50/80 dark:bg-slate-900/70 border border-emerald-300 dark:border-emerald-500/25 rounded-2xl p-5 space-y-3 shadow-md">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                    <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    Student Email Verification
-                  </label>
-                  <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium bg-cyan-100 dark:bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-300 dark:border-cyan-500/30">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <label className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      For DataCrumbs Students Only
+                    </label>
+                    {/* Said before they type, so someone who is not a student
+                        does not have to fail a verification to find out. */}
+                    <p className="text-[11px] text-slate-700 dark:text-slate-400 font-medium mt-1">
+                      Free for students enrolled in our AI &amp; Data Science Bootcamp. Verify with your registered email to continue.
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium bg-cyan-100 dark:bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-300 dark:border-cyan-500/30 shrink-0">
                     Required
                   </span>
                 </div>
@@ -880,6 +887,24 @@ export const MentorshipBooking: React.FC = () => {
                   </div>
                 )}
 
+                {/* Visible before any attempt, so an outsider sees the paid route
+                    immediately instead of discovering it through an error. */}
+                {!verifiedStudent && !fetchError && (
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 border-t border-emerald-200 dark:border-slate-800 pt-3">
+                    Not a DataCrumbs student? The session fee is{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">Rs 1,500</strong> —{" "}
+                    <a
+                      href="https://wa.me/923292020497"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline"
+                    >
+                      message us on WhatsApp
+                    </a>{" "}
+                    to book.
+                  </p>
+                )}
+
                 {fetchError && (
                   <div className="flex items-start gap-2.5 rounded-xl border border-rose-300 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-950/50 p-3 animate-fadeIn">
                     <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
@@ -944,7 +969,7 @@ export const MentorshipBooking: React.FC = () => {
                 {/* Phone / WhatsApp */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                    <span>WhatsApp Number (for instant reminder)</span>
+                    <span>WhatsApp Number</span>
                     {verifiedStudent && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Auto-filled</span>}
                   </label>
                   <input
