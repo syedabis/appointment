@@ -63,6 +63,8 @@ function to12h(hhmm: string): string {
   return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
+type BookableSlot = TimeSlot & { slotId: string; booked: boolean };
+
 function periodOf(hhmm: string): TimeSlot["period"] {
   const hour = Number(hhmm.split(":")[0]);
   if (hour < 12) return "Morning";
@@ -88,7 +90,7 @@ export const MentorshipBooking: React.FC = () => {
   // Date & Time selection states
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTimezone, setSelectedTimezone] = useState<string>("PKT");
-  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<BookableSlot | null>(null);
 
   // Student Roll Number & Verification state
   const [emailInput, setEmailInput] = useState<string>("");
@@ -116,6 +118,7 @@ export const MentorshipBooking: React.FC = () => {
   const [availability, setAvailability] = useState<AvailabilityDay[]>([]);
   const [availabilityLoading, setAvailabilityLoading] = useState<boolean>(true);
   const [availabilityError, setAvailabilityError] = useState<string>("");
+  const [nextEligibleDate, setNextEligibleDate] = useState<string | null>(null);
 
   // Pakistan wall-clock, refreshed so slots expire while the page sits open.
   const [pakistanNow, setPakistanNow] = useState<{ dateKey: string; minutes: number } | null>(null);
@@ -145,6 +148,7 @@ export const MentorshipBooking: React.FC = () => {
           return;
         }
         setAvailability(Array.isArray(data.days) ? data.days : []);
+        setNextEligibleDate(data.nextEligibleDate ?? null);
       } catch {
         if (!cancelled) setAvailabilityError("Could not load available dates. Please check your connection.");
       } finally {
@@ -189,10 +193,12 @@ export const MentorshipBooking: React.FC = () => {
     }
   }, [availableDates, selectedDate]);
 
-  const visibleSlots: TimeSlot[] = useMemo(() => {
+  const visibleSlots: BookableSlot[] = useMemo(() => {
     const day = availableDates.find((d) => d.fullDate === selectedDate);
     if (!day) return [];
     return day.times.map((t) => ({
+      slotId: t.slotId,
+      booked: t.booked,
       time: `${to12h(t.startTime)} - ${to12h(t.endTime)}`,
       period: periodOf(t.startTime),
       isPopular: t.label?.toLowerCase() === "popular" || undefined,
@@ -307,6 +313,7 @@ export const MentorshipBooking: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          slotId: selectedSlot?.slotId,
           trackTitle: selectedTrack?.title,
           mentorName: selectedMentor.name,
           date: selectedDate,
@@ -698,27 +705,36 @@ export const MentorshipBooking: React.FC = () => {
                     return (
                       <button
                         key={index}
-                        onClick={() => setSelectedSlot(slot)}
+                        disabled={slot.booked}
+                        onClick={() => !slot.booked && setSelectedSlot(slot)}
+                        title={slot.booked ? "Already booked by another student" : ""}
                         className={`p-4 rounded-xl border flex items-center justify-between text-left transition-all ${
-                          isSelected
+                          slot.booked
+                            ? "bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                            : isSelected
                             ? "bg-emerald-500/20 border-emerald-500 text-slate-900 dark:text-white shadow-md shadow-emerald-500/10"
                             : "bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 shadow-sm"
                         }`}
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Clock className={`w-4 h-4 ${isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"}`} />
-                            <span className="text-sm font-bold">{slot.time}</span>
+                            <Clock className={`w-4 h-4 ${slot.booked ? "text-slate-300 dark:text-slate-700" : isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"}`} />
+                            <span className={`text-sm font-bold ${slot.booked ? "line-through" : ""}`}>{slot.time}</span>
                           </div>
                           <span className="text-[10px] text-slate-500 dark:text-slate-400">{slot.period} Slot</span>
                         </div>
 
-                        {slot.isPopular && (
+                        {slot.booked && (
+                          <span className="text-[9px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
+                            Booked
+                          </span>
+                        )}
+                        {!slot.booked && slot.isPopular && (
                           <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/30">
                             Popular
                           </span>
                         )}
-                        {slot.isFastFilling && (
+                        {!slot.booked && slot.isFastFilling && (
                           <span className="text-[9px] font-bold bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 px-2 py-0.5 rounded border border-rose-300 dark:border-rose-500/30">
                             Fast Filling
                           </span>

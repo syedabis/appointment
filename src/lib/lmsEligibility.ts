@@ -64,3 +64,66 @@ export async function checkStudentEligibility(email: string): Promise<Eligibilit
   }
   return { eligible: false };
 }
+
+export interface ReservationResult {
+  ok: boolean;
+  student?: VerifiedStudent;
+  error?: string;
+  reason?: string;
+  status: number;
+}
+
+/**
+ * Asks the LMS to reserve a slot. The LMS owns the rules: eligibility, one
+ * student per slot (a unique constraint, so simultaneous clicks cannot both
+ * win), and the rolling cooldown between sessions.
+ */
+export async function reserveBooking(input: {
+  slotId: string;
+  bookingId: string;
+  studentEmail: string;
+  phone?: string;
+  trackTitle?: string;
+  careerStatus?: string;
+  portfolioUrl?: string;
+  goals?: string;
+  focusAreas?: string[];
+  timezone?: string;
+}): Promise<ReservationResult> {
+  const baseUrl = process.env.LMS_ELIGIBILITY_URL;
+  const apiKey = process.env.LMS_API_KEY;
+
+  if (!baseUrl || !apiKey) {
+    throw new LmsUnavailableError("LMS_ELIGIBILITY_URL or LMS_API_KEY is not configured");
+  }
+
+  const url = baseUrl.replace(/\/eligibility\/?$/, "/book");
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(LMS_TIMEOUT_MS),
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw new LmsUnavailableError(
+      error instanceof Error ? error.message : "Could not reach the LMS"
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (response.ok && data?.ok) {
+    return { ok: true, student: data.student, status: 200 };
+  }
+
+  return {
+    ok: false,
+    error: data?.error || "Could not confirm your booking.",
+    reason: data?.reason,
+    status: response.status,
+  };
+}

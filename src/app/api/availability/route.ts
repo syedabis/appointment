@@ -8,12 +8,21 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export interface AvailabilityDay {
-  date: string; // "2026-08-05", Pakistan calendar
-  times: { startTime: string; endTime: string; label: string | null }[];
+export interface AvailabilityTime {
+  slotId: string;
+  startTime: string;
+  endTime: string;
+  label: string | null;
+  /** Already taken by another student — shown greyed out, not hidden. */
+  booked: boolean;
 }
 
-export async function GET() {
+export interface AvailabilityDay {
+  date: string; // "2026-08-05", Pakistan calendar
+  times: AvailabilityTime[];
+}
+
+export async function GET(request: Request) {
   const baseUrl = process.env.LMS_ELIGIBILITY_URL;
   const apiKey = process.env.LMS_API_KEY;
 
@@ -22,8 +31,11 @@ export async function GET() {
     return NextResponse.json({ error: "Not configured", days: [] }, { status: 503 });
   }
 
-  // Same host, sibling route.
-  const url = baseUrl.replace(/\/eligibility\/?$/, "/availability");
+  // Same host, sibling route. The email is optional and only used to tell the
+  // student when their next session may be booked.
+  const email = new URL(request.url).searchParams.get("email")?.trim() ?? "";
+  const base = baseUrl.replace(/\/eligibility\/?$/, "/availability");
+  const url = email ? `${base}?email=${encodeURIComponent(email)}` : base;
 
   try {
     const response = await fetch(url, {
@@ -38,7 +50,11 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json({ days: Array.isArray(data.days) ? data.days : [] });
+    return NextResponse.json({
+      days: Array.isArray(data.days) ? data.days : [],
+      nextEligibleDate: data.nextEligibleDate ?? null,
+      cooldownDays: data.cooldownDays ?? 30,
+    });
   } catch (error) {
     console.error("[availability] Could not reach the LMS:", error);
     return NextResponse.json({ error: "Unavailable", days: [] }, { status: 503 });

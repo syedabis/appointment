@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { appendBookingRow } from "@/lib/googleSheets";
-import { checkStudentEligibility } from "@/lib/lmsEligibility";
+import { reserveBooking } from "@/lib/lmsEligibility";
 import { BookingSubmission } from "@/types/booking";
 
 // googleapis needs the Node runtime; it does not run on the edge.
@@ -40,29 +40,48 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
   }
 
-  // Re-check eligibility here rather than trusting the browser. The UI blocks
-  // ineligible students, but this endpoint is reachable directly with curl.
-  let eligibility;
+  const slotId = text(body.slotId);
+  if (!slotId) {
+    return NextResponse.json({ error: "Please select a time slot." }, { status: 400 });
+  }
+
+  // The booking id is assigned here so the same reference appears in the LMS
+  // and in the sheet.
+  const bookingId = `DC-101-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  // The LMS is the authority: it re-checks eligibility, enforces one-student-
+  // per-slot via a unique constraint, and applies the 30-day cooldown.
+  let reservation;
   try {
-    eligibility = await checkStudentEligibility(email);
+    reservation = await reserveBooking({
+      slotId,
+      bookingId,
+      studentEmail: email,
+      phone: text(body.phone),
+      trackTitle: text(body.trackTitle),
+      careerStatus: text(body.careerStatus),
+      portfolioUrl: text(body.portfolioUrl),
+      goals: text(body.goals),
+      focusAreas: Array.isArray(body.focusAreas) ? body.focusAreas.map(text).filter(Boolean) : [],
+      timezone: text(body.timezone),
+    });
   } catch (error) {
-    console.error("[bookings] Eligibility check failed:", error);
+    console.error("[bookings] Could not reach the LMS:", error);
     return NextResponse.json(
-      { error: "We could not verify your email right now. Please try again shortly." },
+      { error: "We could not confirm your booking right now. Please try again shortly." },
       { status: 503 }
     );
   }
 
-  if (!eligibility.eligible || !eligibility.student) {
+  if (!reservation.ok) {
+    // Pass the LMS's own wording through — it explains slot-taken vs cooldown.
     return NextResponse.json(
-      { error: "This email is not approved for mentorship booking." },
-      { status: 403 }
+      { error: reservation.error, reason: reservation.reason },
+      { status: reservation.status }
     );
   }
 
-  // The booking id and timestamp are assigned here rather than in the browser so
-  // the sheet is the authority on when a booking was actually recorded.
-  const bookingId = `DC-101-${Math.floor(100000 + Math.random() * 900000)}`;
+  const eligibility = { student: reservation.student! };
 
   const booking: BookingSubmission = {
     bookingId,
