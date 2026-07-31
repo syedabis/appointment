@@ -71,8 +71,8 @@ export const SESSION_TRACKS: SessionTrack[] = [
     badgeColor: "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30",
     description: "Personalized 1-on-1 strategy for freelancing & career growth. Build custom GenAI/n8n automation blueprints, close high-ticket clients, and map your AI career transition.",
     highlights: [
-      "Freelance client acquisition & Upwork/cold outreach playbook",
-      "High-ticket AI & n8n automation pricing ($1k–$5k retainers)",
+      "Freelance client acquisition & cold outreach playbook",
+      "High-ticket AI & n8n automation pricing & retainer models",
       "Agentic AI & n8n workflow system architecture review",
       "Skill gap breakdown & personalized AI career roadmap"
     ],
@@ -145,16 +145,16 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Hamza Malik",
     roleBefore: "University Student with zero projects",
     roleAfter: "Junior AI Engineer",
-    company: "Turing AI",
+    company: "",
     quote: "My 1-on-1 mentorship session with Syed Abis changed everything. He spent 15 minutes reviewing my RAG pipeline line by line. I used that exact project to secure my offer!",
-    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200",
+    avatar: withBasePath("/testimonials/Hamza Malik.jpg"),
     highlight: "8+ Deployed ML Projects"
   },
   {
     name: "Ayesha Khan",
     roleBefore: "Marketing Associate",
     roleAfter: "Data Analyst",
-    company: "EasyHire",
+    company: "",
     quote: "Syed Abis roasted my resume and LinkedIn profile in our 15-min session and showed me how to showcase my n8n workflows. I received 3 callbacks within 10 days.",
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
     highlight: "Role Transitioned in 4 Months"
@@ -163,16 +163,16 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Zayn Ahmed",
     roleBefore: "Stuck in repetitive operations",
     roleAfter: "AI Automation Freelancer",
-    company: "Upwork Top Rated ($15k+)",
-    quote: "Syed Abis reviewed my client pitch deck in our AI & Freelance Blueprint slot. I closed a $2,500 automation retainer with a US client right after applying his recommendations.",
+    company: "",
+    quote: "Syed Abis reviewed my client pitch deck in our AI & Freelance Blueprint slot. I closed a high-ticket automation retainer with an international client right after applying his recommendations.",
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200",
-    highlight: "$2.5k Client Closed"
+    highlight: "High-Ticket Client Retainer"
   },
   {
     name: "Bilal Siddiqui",
     roleBefore: "Software Intern",
     roleAfter: "GenAI System Engineer",
-    company: "DataStax Partner",
+    company: "",
     quote: "The 1-on-1 feedback on Vector databases, LangChain memory, and hybrid search optimization saved me weeks of trial & error. Highly recommended for serious devs!",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
     highlight: "GenAI Production Deployment"
@@ -181,16 +181,16 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Sana Fatima",
     roleBefore: "CS Graduate",
     roleAfter: "Computer Vision Researcher",
-    company: "VisionTech Labs",
+    company: "",
     quote: "Syed Abis gave me exact guidance on framing my YOLO and OpenCV GitHub repos to stand out to international AI recruiters. Got selected for a funded AI fellowship!",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+    avatar: withBasePath("/testimonials/Sana Fatima.jpg"),
     highlight: "Funded AI Research Fellowship"
   },
   {
     name: "Usman Chaudhry",
     roleBefore: "Manual QA Tester",
     roleAfter: "n8n Workflow Automation Lead",
-    company: "AutomationX",
+    company: "",
     quote: "I was struggling to pitch complex n8n agentic workflows to enterprise clients. Syed Abis shared a structured pricing framework that doubled my project rates instantly.",
     avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200",
     highlight: "2x Freelance Hourly Rate"
@@ -199,7 +199,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Mariam Tariq",
     roleBefore: "Data Entry Operator",
     roleAfter: "Associate Machine Learning Engineer",
-    company: "Techlogix",
+    company: "",
     quote: "The resume rewrite & keyword optimization in Track 1 bypassed ATS filters seamlessly. I went from zero responses to 4 tech interview invitations in two weeks!",
     avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
     highlight: "4 Interview Invitations in 14 Days"
@@ -208,27 +208,27 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Farhan Ali",
     roleBefore: "Backend Developer",
     roleAfter: "MLOps & Cloud Infrastructure Specialist",
-    company: "CloudAI Solutions",
+    company: "",
     quote: "Syed Abis's architecture breakdown for containerized ML model deployment gave me total confidence during my technical interview round. Landed the role with 40% hike!",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=200",
+    avatar: withBasePath("/testimonials/Farhan Ali.jpg"),
     highlight: "40% Salary Increase"
   },
   {
     name: "Zubair Hassan",
     roleBefore: "Junior Python Programmer",
     roleAfter: "AI Agent Architect",
-    company: "BotScale Systems",
-    quote: "1-on-1 strategy sessions at DataCrumbs are gold. We mapped out autonomous multi-agent systems using CrewAI, which became the cornerstone of my current engineering job.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    company: "",
+    quote: "1-on-1 strategy sessions at DataCrumbs are gold. We mapped out autonomous AI agents & workflow automations, which became the cornerstone of my current engineering job.",
+    avatar: withBasePath("/testimonials/Zubair Hassan.jpg"),
     highlight: "Multi-Agent System Deployed"
   },
   {
     name: "Hira Mustafa",
     roleBefore: "Final Year Student",
     roleAfter: "AI Product Consultant",
-    company: "NextGen Systems",
+    company: "",
     quote: "Syed Abis showed me how to turn my university thesis into a commercial AI MVP. The clarity and actionable roadmap from a single session was priceless.",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200",
+    avatar: withBasePath("/testimonials/Hira Mustafa.png"),
     highlight: "Thesis Converted to Paid MVP"
   }
 ];

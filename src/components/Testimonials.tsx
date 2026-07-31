@@ -66,7 +66,7 @@ export const Testimonials: React.FC = () => {
                       {item.name}
                     </h4>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
-                      Now: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">{item.roleAfter}</strong> @ {item.company}
+                      Now: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">{item.roleAfter}</strong>
                     </p>
                   </div>
                 </div>
