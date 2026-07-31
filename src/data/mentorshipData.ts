@@ -104,7 +104,7 @@ export const MENTORS: Mentor[] = [
     name: "Syed Abis",
     role: "Lead AI Engineer & Principal Mentor",
     company: "DataCrumbs Labs",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+    avatar: withBasePath("/instructor-image.png"),
     specialties: ["LinkedIn & Resume Roast", "Career Advisory & Freelancing", "AI & n8n Blueprint", "Mock Technical Interviews"],
     category: "all",
     rating: 4.99,
@@ -250,7 +250,7 @@ export const FAQS = [
   },
   {
     q: "How much do the mentorship sessions cost?",
-    a: "LinkedIn, Resume & Portfolio review and Career Advisory/Freelance Blueprint sessions are Rs 1,500 each. Enrolled DataCrumbs students can enter their Student Roll No for a Free Pass. Mock Interviews are Free, but registration is currently closed due to high demand."
+    a: "Sessions are free for enrolled DataCrumbs students. Verify with the email address registered on your LMS account to unlock booking. Mock Interviews are currently closed due to high demand."
   },
   {
     q: "Why are Mock Interviews closed for registration?",

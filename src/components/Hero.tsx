@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Sparkles, Calendar, ShieldCheck, Star, Users, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import { withBasePath } from "@/lib/basePath";
 
 interface HeroProps {
   onStartBooking: () => void;
@@ -76,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartBooking }) => {
           {/* Social Proof sub-line */}
           <div className="pt-6 flex items-center justify-center space-x-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
             <div className="flex -space-x-2">
-              <img className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-[#080c14] object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" alt="Mentor" />
+              <img className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-[#080c14] object-cover" src={withBasePath("/instructor-image.png")} alt="Syed Abis" />
             </div>
             <div className="flex items-center gap-1">
               <div className="flex text-amber-400">
