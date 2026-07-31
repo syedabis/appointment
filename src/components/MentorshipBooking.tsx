@@ -45,7 +45,8 @@ import {
   Building2,
   QrCode,
   Receipt,
-  Check
+  Check,
+  AlertCircle
 } from "lucide-react";
 
 /**
@@ -800,7 +801,7 @@ export const MentorshipBooking: React.FC = () => {
               </div>
 
               {/* STUDENT EMAIL VERIFICATION BOX */}
-              <div className="bg-emerald-50/80 dark:bg-gradient-to-r dark:from-emerald-950/40 dark:via-slate-900 dark:to-cyan-950/40 border border-emerald-300 dark:border-emerald-500/30 rounded-2xl p-5 space-y-3 shadow-md">
+              <div className="bg-emerald-50/80 dark:bg-slate-900/70 border border-emerald-300 dark:border-emerald-500/25 rounded-2xl p-5 space-y-3 shadow-md">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
                     <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -880,7 +881,12 @@ export const MentorshipBooking: React.FC = () => {
                 )}
 
                 {fetchError && (
-                  <p className="text-xs text-rose-600 dark:text-rose-400 font-medium pt-1">⚠️ {fetchError}</p>
+                  <div className="flex items-start gap-2.5 rounded-xl border border-rose-300 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-950/50 p-3 animate-fadeIn">
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                    <p className="text-xs font-medium leading-relaxed text-rose-800 dark:text-rose-200">
+                      {fetchError}
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -1073,7 +1079,7 @@ export const MentorshipBooking: React.FC = () => {
               </div>
 
               {/* TICKET PASS DISPLAY */}
-              <div className="bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:to-[#0a1120] border border-emerald-300 dark:border-emerald-500/40 rounded-3xl p-6 text-left space-y-4 shadow-2xl relative overflow-hidden">
+              <div className="bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-500/40 rounded-3xl p-6 text-left space-y-4 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-2xl rounded-full" />
                 
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
@@ -1173,7 +1179,7 @@ export const MentorshipBooking: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-gradient-to-r dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
                   <Receipt className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
