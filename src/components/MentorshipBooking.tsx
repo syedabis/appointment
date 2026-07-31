@@ -249,8 +249,10 @@ export const MentorshipBooking: React.FC = () => {
 
       if (!result.eligible || !result.student) {
         setVerifiedStudent(null);
+        // Non-students cannot self-serve a paid booking yet, so point them at
+        // WhatsApp rather than implying there is a checkout.
         setFetchError(
-          "This email is not approved for mentorship booking. Please use the email registered on your DataCrumbs LMS account, or contact support."
+          "This email doesn't have booking access. Free sessions are for enrolled DataCrumbs students. For a paid session (Rs 1,500), WhatsApp +92 329 2020497."
         );
         return;
       }
