@@ -192,3 +192,39 @@
   animation-play-state: paused;
 }
 
+/* Alumni logo rows (mobile only). Each row holds its items twice, so shifting
+   by -50% lands exactly on the duplicate and the loop is seamless. */
+@keyframes marquee-scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-logo-row {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.animate-logo-row-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll-reverse 30s linear infinite;
+}
+
+.animate-logo-row:hover,
+.animate-logo-row-reverse:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-logo-row,
+  .animate-logo-row-reverse,
+  .animate-marquee-continuous {
+    animation: none;
+  }
+}
+
