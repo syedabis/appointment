@@ -234,12 +234,11 @@ export const MentorshipBooking: React.FC = () => {
 
   // Looks the email up against the LMS through our own server route, so the
   // LMS key stays server-side and the student list cannot be enumerated.
-  const handleVerifyStudent = async () => {
+  const handleVerifyStudent = async (): Promise<boolean> => {
     const email = emailInput.trim();
-    if (!email) {
-      setFetchError("Please enter your registered student email.");
-      return;
-    }
+    // Blur fires on an empty or half-typed field too — stay quiet until there
+    // is something worth looking up.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
 
     setIsVerifying(true);
     setFetchError("");
@@ -256,7 +255,7 @@ export const MentorshipBooking: React.FC = () => {
       if (!response.ok) {
         setVerifiedStudent(null);
         setFetchError(result.error || "Could not verify this email. Please try again.");
-        return;
+        return false;
       }
 
       // Everyone can book now. The answer is a price, not a yes/no — a student
@@ -278,9 +277,11 @@ export const MentorshipBooking: React.FC = () => {
         email: result.student?.email || email,
         phone: result.student?.phone || prev.phone
       }));
+      return true;
     } catch {
       setVerifiedStudent(null);
       setFetchError("Network problem while verifying. Please check your connection and try again.");
+      return false;
     } finally {
       setIsVerifying(false);
     }
@@ -300,19 +301,29 @@ export const MentorshipBooking: React.FC = () => {
     }
   };
 
-  const handleConfirmBooking = (e: React.FormEvent) => {
+  const handleConfirmBooking = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Only verified students can book. The server re-checks this too, so this
-    // is a UX guard rather than the actual security boundary.
-    if (!verifiedStudent) {
-      toast.error("Please verify your student email before confirming the booking.");
+    if (!studentDetails.fullName.trim()) {
+      toast.error("Please enter your full name.");
       return;
     }
 
-    if (!studentDetails.fullName || !studentDetails.email) {
-      toast.error("Please fill in your name and email address.");
+    const email = studentDetails.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
       return;
+    }
+
+    // The lookup normally runs on blur, but someone can submit before it has
+    // finished (or without ever leaving the field). Price must be known before
+    // the modal opens, otherwise it would show a free pass to a paying visitor.
+    if (!quote) {
+      const priced = await handleVerifyStudent();
+      if (!priced) {
+        toast.error("We could not check your email. Please try again.");
+        return;
+      }
     }
 
     if (!studentDetails.phone.trim()) {
@@ -860,50 +871,42 @@ export const MentorshipBooking: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <div className="relative w-full">
-                    <input
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      placeholder="Enter your email (e.g. you@example.com)"
-                      value={emailInput}
-                      disabled={isVerifying}
-                      onChange={(e) => {
-                        setEmailInput(e.target.value);
-                        // Any edit invalidates a previous result.
-                        if (verifiedStudent) setVerifiedStudent(null);
-                        if (quote) setQuote(null);
-                        if (fetchError) setFetchError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleVerifyStudent();
-                        }
-                      }}
-                      className="w-full bg-white dark:bg-slate-900 border border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors shadow-sm disabled:opacity-60"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyStudent()}
-                    disabled={isVerifying}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 whitespace-nowrap flex items-center justify-center gap-2 transition-all disabled:opacity-70"
-                  >
+                <div className="relative">
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="Enter your email (e.g. you@example.com)"
+                    value={emailInput}
+                    onChange={(e) => {
+                      setEmailInput(e.target.value);
+                      // One email now — the form no longer has its own field,
+                      // so this is the address that gets priced and booked.
+                      setStudentDetails((prev) => ({ ...prev, email: e.target.value.trim() }));
+                      // Any edit invalidates the previous answer.
+                      if (verifiedStudent) setVerifiedStudent(null);
+                      if (quote) setQuote(null);
+                      if (fetchError) setFetchError("");
+                    }}
+                    onBlur={() => handleVerifyStudent()}
+                    className="w-full bg-white dark:bg-slate-900 border border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500 rounded-xl px-4 py-3 pr-32 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors shadow-sm"
+                  />
+                  {/* Status sits inside the field — the lookup runs on its own,
+                      so there is no button for the visitor to remember to press. */}
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold flex items-center gap-1.5 pointer-events-none">
                     {isVerifying ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                        Verifying...
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-slate-500 dark:text-slate-400">Checking...</span>
                       </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4 text-slate-950" />
-                        Verify Email
-                      </>
-                    )}
-                  </button>
+                    ) : quote ? (
+                      quote.free ? (
+                        <span className="text-emerald-700 dark:text-emerald-400">Free session</span>
+                      ) : (
+                        <span className="text-amber-700 dark:text-amber-400">Rs {quote.amountPkr}</span>
+                      )
+                    ) : null}
+                  </span>
                 </div>
 
                 {/* Just the price here — the bank details and receipt upload
@@ -988,7 +991,7 @@ export const MentorshipBooking: React.FC = () => {
               </div>
 
               {/* Form Input Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 
                 {/* Full Name */}
                 <div className="space-y-1.5">
@@ -1002,22 +1005,6 @@ export const MentorshipBooking: React.FC = () => {
                     placeholder="e.g. Ali Raza"
                     value={studentDetails.fullName}
                     onChange={(e) => setStudentDetails({ ...studentDetails, fullName: e.target.value })}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors shadow-sm"
-                  />
-                </div>
-
-                {/* Email Address */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                    <span>Email Address <span className="text-emerald-600 dark:text-emerald-400">*</span></span>
-                    {verifiedStudent && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Auto-filled</span>}
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. ali.raza@example.com"
-                    value={studentDetails.email}
-                    onChange={(e) => setStudentDetails({ ...studentDetails, email: e.target.value })}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors shadow-sm"
                   />
                 </div>
@@ -1056,7 +1043,7 @@ export const MentorshipBooking: React.FC = () => {
                 </div>
 
                 {/* GitHub / Portfolio Link */}
-                <div className="sm:col-span-2 space-y-1.5">
+                <div className="sm:col-span-2 lg:col-span-3 space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                     <span>GitHub / Portfolio / Resume Link (Optional but Recommended)</span>
                   </label>
@@ -1070,7 +1057,7 @@ export const MentorshipBooking: React.FC = () => {
                 </div>
 
                 {/* Goals & Questions */}
-                <div className="sm:col-span-2 space-y-1.5">
+                <div className="sm:col-span-2 lg:col-span-3 space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     What specific question or code repo do you want to review in this session?
                   </label>
@@ -1127,16 +1114,10 @@ export const MentorshipBooking: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={!verifiedStudent}
-                  title={!verifiedStudent ? "Verify your student email first" : ""}
-                  className={`px-8 py-4 rounded-xl font-black text-base shadow-xl transition-all flex items-center justify-center gap-2 ${
-                    verifiedStudent
-                      ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 shadow-emerald-500/25 hover:scale-105 cursor-pointer"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shadow-none cursor-not-allowed"
-                  }`}
+                  className="px-8 py-4 rounded-xl font-black text-base shadow-xl transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 shadow-emerald-500/25 hover:scale-105 cursor-pointer"
                 >
                   <Sparkles className="w-5 h-5" />
-                  {verifiedStudent ? "Confirm & Reserve 1-on-1 Slot" : "Verify Your Email to Continue"}
+                  {quote && !quote.free ? `Continue to Payment · Rs ${quote.amountPkr}` : "Confirm & Reserve 1-on-1 Slot"}
                 </button>
               </div>
             </form>
