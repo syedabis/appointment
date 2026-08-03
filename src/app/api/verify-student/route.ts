@@ -34,13 +34,9 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Everyone may book now — the response says whether it is free or paid.
     const result = await checkStudentEligibility(email);
-
-    if (!result.eligible || !result.student) {
-      return NextResponse.json({ eligible: false });
-    }
-
-    return NextResponse.json({ eligible: true, student: result.student });
+    return NextResponse.json(result);
   } catch (error) {
     if (error instanceof LmsUnavailableError) {
       // Never fall back to "eligible" when we simply could not check.

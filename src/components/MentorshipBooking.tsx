@@ -12,7 +12,7 @@ import {
 } from "@/data/mentorshipData";
 import { withBasePath } from "@/lib/basePath";
 import { toast, Toaster } from "sonner";
-import type { VerifiedStudent } from "@/lib/lmsEligibility";
+import type { VerifiedStudent, PaymentInstructions } from "@/lib/lmsEligibility";
 import { getPakistanNow, getSlotStartMinutes, BOOKING_BUFFER_MINUTES } from "@/lib/pakistanTime";
 import type { AvailabilityDay } from "@/app/api/availability/route";
 import { 
@@ -99,6 +99,16 @@ export const MentorshipBooking: React.FC = () => {
   const [verifiedStudent, setVerifiedStudent] = useState<VerifiedStudent | null>(null);
   const [fetchError, setFetchError] = useState<string>("");
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  /** What this email will be charged, returned by the LMS after verification. */
+  const [quote, setQuote] = useState<{
+    isStudent: boolean;
+    free: boolean;
+    amountPkr: number;
+    freeAvailableFrom: string | null;
+    payment: PaymentInstructions | null;
+  } | null>(null);
+  /** Receipt the visitor uploads when the session is not free. */
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   // Student details state
   const [studentDetails, setStudentDetails] = useState({
@@ -249,22 +259,24 @@ export const MentorshipBooking: React.FC = () => {
         return;
       }
 
-      if (!result.eligible || !result.student) {
-        setVerifiedStudent(null);
-        // Non-students cannot self-serve a paid booking yet, so point them at
-        // WhatsApp rather than implying there is a checkout.
-        setFetchError(
-          "This email doesn't have booking access. Free sessions are for enrolled DataCrumbs students. For a paid session (Rs 1,500), WhatsApp +92 329 2020497."
-        );
-        return;
-      }
+      // Everyone can book now. The answer is a price, not a yes/no — a student
+      // with a free session left pays nothing, everyone else pays per session.
+      setQuote({
+        isStudent: !!result.isStudent,
+        free: !!result.free,
+        amountPkr: result.amountPkr ?? 0,
+        freeAvailableFrom: result.freeAvailableFrom ?? null,
+        payment: result.payment ?? null,
+      });
 
-      setVerifiedStudent(result.student);
+      setVerifiedStudent(
+        result.student ?? { fullName: "", email, phone: "", cohort: "" }
+      );
       setStudentDetails(prev => ({
         ...prev,
-        fullName: result.student.fullName || prev.fullName,
-        email: result.student.email,
-        phone: result.student.phone || prev.phone
+        fullName: result.student?.fullName || prev.fullName,
+        email: result.student?.email || email,
+        phone: result.student?.phone || prev.phone
       }));
     } catch {
       setVerifiedStudent(null);
@@ -308,6 +320,11 @@ export const MentorshipBooking: React.FC = () => {
       return;
     }
 
+    if (quote && !quote.free && !receiptFile) {
+      toast.error(`Please upload your payment receipt for Rs ${quote.amountPkr}.`);
+      return;
+    }
+
     // These pills are buttons, not checkboxes, so `required` cannot apply.
     if (studentDetails.focusAreas.length === 0) {
       toast.error("Please select at least one focus topic for this meeting.");
@@ -324,10 +341,7 @@ export const MentorshipBooking: React.FC = () => {
     setSubmitError("");
 
     try {
-      const response = await fetch(withBasePath("/api/bookings"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const payload = JSON.stringify({
           slotId: selectedSlot?.slotId,
           trackTitle: selectedTrack?.title,
           mentorName: selectedMentor.name,
@@ -341,10 +355,24 @@ export const MentorshipBooking: React.FC = () => {
           portfolioUrl: studentDetails.portfolioUrl,
           goals: studentDetails.goals,
           focusAreas: studentDetails.focusAreas
-          // Identity, cohort, amount and payment method are set by the server
-          // from the LMS lookup — sending them from here would be untrusted.
-        })
+        // Identity, cohort, amount and payment method are set by the server
+        // from the LMS lookup — sending them from here would be untrusted.
       });
+
+      // A paid booking carries the receipt, so it has to go as multipart.
+      let response: Response;
+      if (quote && !quote.free && receiptFile) {
+        const form = new FormData();
+        form.append("payload", payload);
+        form.append("receipt", receiptFile);
+        response = await fetch(withBasePath("/api/bookings"), { method: "POST", body: form });
+      } else {
+        response = await fetch(withBasePath("/api/bookings"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        });
+      }
 
       const result = await response.json();
       if (!response.ok) {
@@ -845,6 +873,7 @@ export const MentorshipBooking: React.FC = () => {
                         setEmailInput(e.target.value);
                         // Any edit invalidates a previous result.
                         if (verifiedStudent) setVerifiedStudent(null);
+                        if (quote) setQuote(null);
                         if (fetchError) setFetchError("");
                       }}
                       onKeyDown={(e) => {
@@ -877,8 +906,76 @@ export const MentorshipBooking: React.FC = () => {
                   </button>
                 </div>
 
+                {/* Paid path: price, bank details and receipt upload. */}
+                {quote && !quote.free && (
+                  <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-4 space-y-3 animate-fadeIn">
+                    <div className="flex items-start gap-2.5">
+                      <CreditCard className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="text-xs">
+                        <p className="font-bold text-amber-900 dark:text-amber-200 text-sm">
+                          Session fee: Rs {quote.amountPkr}
+                        </p>
+                        <p className="text-amber-800 dark:text-amber-200/80 font-medium mt-0.5">
+                          {quote.isStudent
+                            ? `You have already used your free session. Your next free one is available from ${quote.freeAvailableFrom}. Extra sessions are Rs ${quote.amountPkr} each.`
+                            : "Free sessions are for enrolled DataCrumbs students. You can still book — just fill the form below and pay the session fee."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {quote.payment && (
+                      <div className="rounded-lg bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 p-3 text-[11px] space-y-1.5">
+                        <p className="font-bold text-slate-900 dark:text-white text-xs">
+                          Transfer Rs {quote.amountPkr}, then upload the receipt
+                        </p>
+                        {quote.payment.bank.title && (
+                          <div className="flex justify-between gap-3">
+                            <span className="text-slate-600 dark:text-slate-400">
+                              {quote.payment.bank.name || "Bank"}
+                            </span>
+                            <span className="text-slate-900 dark:text-white font-mono font-semibold text-right">
+                              {quote.payment.bank.title}
+                              {quote.payment.bank.accountNumber ? ` · ${quote.payment.bank.accountNumber}` : ""}
+                            </span>
+                          </div>
+                        )}
+                        {quote.payment.wallet.number && (
+                          <div className="flex justify-between gap-3">
+                            <span className="text-slate-600 dark:text-slate-400">EasyPaisa / JazzCash</span>
+                            <span className="text-slate-900 dark:text-white font-mono font-semibold text-right">
+                              {quote.payment.wallet.title} · {quote.payment.wallet.number}
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                          The screenshot must clearly show the account title, the exact amount
+                          (Rs {quote.amountPkr}) and the date/time. Receipts older than{" "}
+                          {quote.payment.windowHours} hours are not accepted.
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 dark:text-amber-200 mb-1.5">
+                        Upload payment receipt <span className="text-rose-600">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                        className="w-full text-[11px] text-slate-700 dark:text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-950 file:text-[11px] file:font-bold cursor-pointer"
+                      />
+                      {receiptFile && (
+                        <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium mt-1">
+                          ✓ {receiptFile.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Verification Status Banner */}
-                {verifiedStudent && (
+                {verifiedStudent && quote?.free && (
                   <div className="bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-400 dark:border-emerald-500/50 rounded-xl p-3.5 flex items-center justify-between text-xs text-slate-900 dark:text-slate-200 animate-fadeIn">
                     <div className="flex items-center gap-3">
                       <BadgeCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />

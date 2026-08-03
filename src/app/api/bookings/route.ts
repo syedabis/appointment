@@ -21,11 +21,25 @@ function text(value: unknown): string {
 
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
+  let receiptFile: File | null = null;
 
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  // A paid booking arrives as multipart so it can carry the payment receipt.
+  const contentType = request.headers.get("content-type") ?? "";
+  if (contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    try {
+      body = JSON.parse(String(form.get("payload") ?? "{}"));
+    } catch {
+      return NextResponse.json({ error: "Invalid form payload." }, { status: 400 });
+    }
+    const file = form.get("receipt");
+    if (file instanceof File && file.size > 0) receiptFile = file;
+  } else {
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
   }
 
   const missing = REQUIRED_FIELDS.filter((field) => !text(body[field]));
@@ -76,6 +90,13 @@ export async function POST(request: Request) {
       goals: text(body.goals),
       focusAreas,
       timezone: text(body.timezone),
+      receipt: receiptFile
+        ? {
+            buffer: Buffer.from(await receiptFile.arrayBuffer()),
+            filename: receiptFile.name || "receipt.jpg",
+            mimeType: receiptFile.type,
+          }
+        : undefined,
     });
   } catch (error) {
     console.error("[bookings] Could not reach the LMS:", error);
@@ -93,29 +114,31 @@ export async function POST(request: Request) {
     );
   }
 
-  const eligibility = { student: reservation.student! };
+  // A paying non-student has no LMS profile, so there is nothing to trust from
+  // the LMS — fall back to what they typed. For students the LMS values win,
+  // which is what stops a student spoofing someone else's name.
+  const student = reservation.student ?? null;
 
   const booking: BookingSubmission = {
     bookingId,
     submittedAt: new Date().toISOString(),
     trackTitle: text(body.trackTitle),
-    amount: "Rs 0 (Student Pass)",
+    amount: reservation.isPaid ? `Rs ${reservation.amountPkr}` : "Rs 0 (Student Pass)",
     mentorName: text(body.mentorName),
     date: text(body.date),
     slot: text(body.slot),
     timezone: text(body.timezone),
-    // Identity fields come from the LMS, not the form, so they cannot be spoofed.
-    fullName: eligibility.student.fullName || text(body.fullName),
+    fullName: student?.fullName || text(body.fullName),
     email,
-    phone: text(body.phone) || eligibility.student.phone,
+    phone: text(body.phone) || student?.phone || "",
     careerStatus: text(body.careerStatus),
     portfolioUrl: text(body.portfolioUrl),
     goals: text(body.goals),
     focusAreas,
     rollNo: "",
-    cohort: eligibility.student.cohort,
-    isEnrolledVerified: true,
-    paymentMethod: "Student Free Pass",
+    cohort: student?.cohort || (reservation.isPaid ? "Paid (non-student)" : ""),
+    isEnrolledVerified: !reservation.isPaid,
+    paymentMethod: reservation.isPaid ? "Paid — receipt verified" : "Student Free Pass",
     trxId: "",
   };
 
