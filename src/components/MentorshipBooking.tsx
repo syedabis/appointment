@@ -11,6 +11,7 @@ import {
   TimeSlot,
 } from "@/data/mentorshipData";
 import { withBasePath } from "@/lib/basePath";
+import { toast, Toaster } from "sonner";
 import type { VerifiedStudent } from "@/lib/lmsEligibility";
 import { getPakistanNow, getSlotStartMinutes, BOOKING_BUFFER_MINUTES } from "@/lib/pakistanTime";
 import type { AvailabilityDay } from "@/app/api/availability/route";
@@ -293,23 +294,23 @@ export const MentorshipBooking: React.FC = () => {
     // Only verified students can book. The server re-checks this too, so this
     // is a UX guard rather than the actual security boundary.
     if (!verifiedStudent) {
-      setFetchError("Please verify your student email before confirming the booking.");
+      toast.error("Please verify your student email before confirming the booking.");
       return;
     }
 
     if (!studentDetails.fullName || !studentDetails.email) {
-      setFetchError("Please fill in your name and email address.");
+      toast.error("Please fill in your name and email address.");
       return;
     }
 
     if (!studentDetails.phone.trim()) {
-      setFetchError("Please enter your WhatsApp number so we can send your session reminder.");
+      toast.error("Please enter your WhatsApp number so we can send your session reminder.");
       return;
     }
 
     // These pills are buttons, not checkboxes, so `required` cannot apply.
     if (studentDetails.focusAreas.length === 0) {
-      setFetchError("Please select at least one focus topic for this meeting.");
+      toast.error("Please select at least one focus topic for this meeting.");
       return;
     }
 
@@ -385,6 +386,7 @@ export const MentorshipBooking: React.FC = () => {
 
   return (
     <section id="booking-section" className="py-16 bg-slate-50 dark:bg-[#080c14] relative">
+      <Toaster position="top-center" richColors closeButton />
       {/* Background glow elements */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-emerald-500/10 blur-[150px] rounded-full pointer-events-none animate-pulse-glow" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/10 blur-[150px] rounded-full pointer-events-none animate-pulse-glow" />
