@@ -837,7 +837,7 @@ export const MentorshipBooking: React.FC = () => {
                   Step 4: Student Information & Meeting Preparation
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                  Free 1-on-1 sessions are for enrolled DataCrumbs LMS students. Verify your LMS email below to continue.
+                  Enter your email to continue. Enrolled DataCrumbs students book free; everyone else pays the session fee.
                 </p>
               </div>
 
@@ -847,12 +847,12 @@ export const MentorshipBooking: React.FC = () => {
                   <div>
                     <label className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
                       <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      For DataCrumbs Students Only
+                      Verify Your Email
                     </label>
                     {/* Said before they type, so someone who is not a student
                         does not have to fail a verification to find out. */}
                     <p className="text-[11px] text-slate-700 dark:text-slate-400 font-medium mt-1">
-                      Free for students enrolled in our AI &amp; Data Science Bootcamp. Verify with your registered email to continue.
+                      Students enrolled in our AI &amp; Data Science Bootcamp get one free session. Everyone else is welcome to book at the standard session fee.
                     </p>
                   </div>
                   <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium bg-cyan-100 dark:bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-300 dark:border-cyan-500/30 shrink-0">
@@ -866,7 +866,7 @@ export const MentorshipBooking: React.FC = () => {
                       type="email"
                       inputMode="email"
                       autoComplete="email"
-                      placeholder="Enter your LMS email (e.g. you@example.com)"
+                      placeholder="Enter your email (e.g. you@example.com)"
                       value={emailInput}
                       disabled={isVerifying}
                       onChange={(e) => {
@@ -948,17 +948,16 @@ export const MentorshipBooking: React.FC = () => {
                     immediately instead of discovering it through an error. */}
                 {!verifiedStudent && !fetchError && (
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 border-t border-emerald-200 dark:border-slate-800 pt-3">
-                    Not a DataCrumbs student? The session fee is{" "}
-                    <strong className="text-slate-800 dark:text-slate-200">Rs 1,500</strong> —{" "}
+                    Not enrolled with us? You can still book — you&apos;ll just pay the session
+                    fee at the last step. Need help?{" "}
                     <a
                       href="https://wa.me/923292020497"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline"
                     >
-                      message us on WhatsApp
-                    </a>{" "}
-                    to book.
+                      Message us on WhatsApp
+                    </a>.
                   </p>
                 )}
 
