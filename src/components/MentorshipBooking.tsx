@@ -320,11 +320,6 @@ export const MentorshipBooking: React.FC = () => {
       return;
     }
 
-    if (quote && !quote.free && !receiptFile) {
-      toast.error(`Please upload your payment receipt for Rs ${quote.amountPkr}.`);
-      return;
-    }
-
     // These pills are buttons, not checkboxes, so `required` cannot apply.
     if (studentDetails.focusAreas.length === 0) {
       toast.error("Please select at least one focus topic for this meeting.");
@@ -337,6 +332,11 @@ export const MentorshipBooking: React.FC = () => {
   };
 
   const executeFinalPayment = async () => {
+    if (quote && !quote.free && !receiptFile) {
+      toast.error(`Please upload your payment receipt for Rs ${quote.amountPkr}.`);
+      return;
+    }
+
     setIsProcessingPayment(true);
     setSubmitError("");
 
@@ -906,71 +906,18 @@ export const MentorshipBooking: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Paid path: price, bank details and receipt upload. */}
+                {/* Just the price here — the bank details and receipt upload
+                    live in the confirmation modal, so this box stays short. */}
                 {quote && !quote.free && (
-                  <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-4 space-y-3 animate-fadeIn">
-                    <div className="flex items-start gap-2.5">
-                      <CreditCard className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div className="text-xs">
-                        <p className="font-bold text-amber-900 dark:text-amber-200 text-sm">
-                          Session fee: Rs {quote.amountPkr}
-                        </p>
-                        <p className="text-amber-800 dark:text-amber-200/80 font-medium mt-0.5">
-                          {quote.isStudent
-                            ? `You have already used your free session. Your next free one is available from ${quote.freeAvailableFrom}. Extra sessions are Rs ${quote.amountPkr} each.`
-                            : "Free sessions are for enrolled DataCrumbs students. You can still book — just fill the form below and pay the session fee."}
-                        </p>
-                      </div>
-                    </div>
-
-                    {quote.payment && (
-                      <div className="rounded-lg bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 p-3 text-[11px] space-y-1.5">
-                        <p className="font-bold text-slate-900 dark:text-white text-xs">
-                          Transfer Rs {quote.amountPkr}, then upload the receipt
-                        </p>
-                        {quote.payment.bank.title && (
-                          <div className="flex justify-between gap-3">
-                            <span className="text-slate-600 dark:text-slate-400">
-                              {quote.payment.bank.name || "Bank"}
-                            </span>
-                            <span className="text-slate-900 dark:text-white font-mono font-semibold text-right">
-                              {quote.payment.bank.title}
-                              {quote.payment.bank.accountNumber ? ` · ${quote.payment.bank.accountNumber}` : ""}
-                            </span>
-                          </div>
-                        )}
-                        {quote.payment.wallet.number && (
-                          <div className="flex justify-between gap-3">
-                            <span className="text-slate-600 dark:text-slate-400">EasyPaisa / JazzCash</span>
-                            <span className="text-slate-900 dark:text-white font-mono font-semibold text-right">
-                              {quote.payment.wallet.title} · {quote.payment.wallet.number}
-                            </span>
-                          </div>
-                        )}
-                        <p className="text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
-                          The screenshot must clearly show the account title, the exact amount
-                          (Rs {quote.amountPkr}) and the date/time. Receipts older than{" "}
-                          {quote.payment.windowHours} hours are not accepted.
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-amber-900 dark:text-amber-200 mb-1.5">
-                        Upload payment receipt <span className="text-rose-600">*</span>
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
-                        className="w-full text-[11px] text-slate-700 dark:text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-950 file:text-[11px] file:font-bold cursor-pointer"
-                      />
-                      {receiptFile && (
-                        <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium mt-1">
-                          ✓ {receiptFile.name}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex items-start gap-2.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-3 animate-fadeIn">
+                    <CreditCard className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-900 dark:text-amber-200 font-medium leading-relaxed">
+                      <strong>Session fee: Rs {quote.amountPkr}.</strong>{" "}
+                      {quote.isStudent
+                        ? `Your free session is used — the next one is available from ${quote.freeAvailableFrom}.`
+                        : "Free sessions are for enrolled DataCrumbs students."}{" "}
+                      Fill the form below and you&apos;ll pay at the last step.
+                    </p>
                   </div>
                 )}
 
@@ -1352,153 +1299,93 @@ export const MentorshipBooking: React.FC = () => {
                 <div className="flex items-center justify-between text-sm pt-1">
                   <span className="text-slate-800 dark:text-slate-300 font-bold">Total Amount Due:</span>
                   <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-                    {verifiedStudent ? "Rs 0 (Student Pass)" : selectedTrack?.price}
+                    {quote && !quote.free ? `Rs ${quote.amountPkr}` : "Rs 0 (Student Pass)"}
                   </span>
                 </div>
               </div>
 
-              {/* Verified Student Notice */}
-              {verifiedStudent || !ALLOW_PAID_BOOKING ? (
+              {/* Free session — nothing to pay. */}
+              {(!quote || quote.free) ? (
                 <div className="bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/40 rounded-2xl p-4 text-xs text-emerald-900 dark:text-emerald-300 space-y-1">
                   <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400 text-sm">
                     <BadgeCheck className="w-5 h-5" />
                     <span>DataCrumbs Student Free Pass Verified!</span>
                   </div>
                   <p className="text-slate-700 dark:text-slate-300 font-medium">
-                    Your enrolled account <strong className="text-slate-900 dark:text-white">{verifiedStudent?.email}</strong> includes 100% free mentorship sessions. No fee payment required.
+                    Your enrolled account <strong className="text-slate-900 dark:text-white">{verifiedStudent?.email}</strong> includes a free mentorship session. No fee payment required.
                   </p>
                 </div>
               ) : (
-                <>
-                  {/* Payment Method Selector Tabs */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Select Payment Method
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("easypaisa")}
-                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
-                          paymentMethod === "easypaisa"
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-md"
-                            : "bg-slate-100 dark:bg-slate-950/60 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        }`}
-                      >
-                        <QrCode className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <span>EasyPaisa / JazzCash</span>
-                      </button>
+                <div className="space-y-4">
+                  {/* Where to send the money */}
+                  <div className="rounded-2xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 space-y-2.5">
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Step 1 — Transfer Rs {quote.amountPkr}
+                    </p>
 
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("bank")}
-                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
-                          paymentMethod === "bank"
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-md"
-                            : "bg-slate-100 dark:bg-slate-950/60 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        }`}
-                      >
-                        <Building2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                        <span>Bank IBFT</span>
-                      </button>
+                    {quote.payment?.bank.title && (
+                      <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">
+                            {quote.payment.bank.name || "Bank"}
+                          </span>
+                          <span className="text-slate-900 dark:text-white font-bold">
+                            {quote.payment.bank.title}
+                          </span>
+                        </div>
+                        {quote.payment.bank.accountNumber && (
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-slate-600 dark:text-slate-400 font-medium">Account</span>
+                            <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold text-[11px] break-all text-right">
+                              {quote.payment.bank.accountNumber}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("card")}
-                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
-                          paymentMethod === "card"
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-md"
-                            : "bg-slate-100 dark:bg-slate-950/60 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        }`}
-                      >
-                        <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <span>Debit / Credit Card</span>
-                      </button>
-                    </div>
+                    {quote.payment?.wallet.number && (
+                      <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">EasyPaisa / JazzCash</span>
+                          <span className="text-slate-900 dark:text-white font-bold">
+                            {quote.payment.wallet.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">Number</span>
+                          <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                            {quote.payment.wallet.number}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Payment Details Box */}
-                  {paymentMethod === "easypaisa" && (
-                    <div className="bg-slate-100 dark:bg-slate-950 p-4 rounded-2xl border border-slate-300 dark:border-slate-800 space-y-3 text-xs">
-                      <div className="flex items-center justify-between text-slate-800 dark:text-slate-300 font-medium">
-                        <span>EasyPaisa / JazzCash Number:</span>
-                        <strong className="text-emerald-700 dark:text-emerald-400 text-sm font-mono font-bold">0329-2020497</strong>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-800 dark:text-slate-300 font-medium">
-                        <span>Account Title:</span>
-                        <strong className="text-slate-900 dark:text-white font-bold">DataCrumbs Labs</strong>
-                      </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                        Send <strong>Rs 1,500</strong> to the number above via EasyPaisa/JazzCash app and enter your Transaction ID below.
+                  {/* Receipt */}
+                  <div className="rounded-2xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 space-y-2.5">
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Step 2 — Upload your receipt
+                    </p>
+                    <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-4">
+                      <li>The screenshot must show the <strong>account title</strong>.</li>
+                      <li>It must show <strong>exactly Rs {quote.amountPkr}</strong> — not more, not less.</li>
+                      <li>It must show the <strong>date and time</strong> of the transfer.</li>
+                      <li>Receipts older than {quote.payment?.windowHours ?? 24} hours are not accepted.</li>
+                    </ul>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                      className="w-full text-xs text-slate-700 dark:text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-950 file:text-xs file:font-bold cursor-pointer"
+                    />
+                    {receiptFile && (
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
+                        Ready to submit: {receiptFile.name}
                       </p>
-                    </div>
-                  )}
-
-                  {paymentMethod === "bank" && (
-                    <div className="bg-slate-100 dark:bg-slate-950 p-4 rounded-2xl border border-slate-300 dark:border-slate-800 space-y-2 text-xs">
-                      <div className="flex items-center justify-between text-slate-800 dark:text-slate-300 font-medium">
-                        <span>Bank Name:</span>
-                        <strong className="text-cyan-700 dark:text-cyan-400 font-bold">Meezan Bank Ltd</strong>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-800 dark:text-slate-300 font-medium">
-                        <span>Account Title:</span>
-                        <strong className="text-slate-900 dark:text-white font-bold">DataCrumbs Labs</strong>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-800 dark:text-slate-300 font-medium">
-                        <span>IBAN / Account #:</span>
-                        <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-[11px] font-bold">PK92MEZN0001000123456789</strong>
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === "card" && (
-                    <div className="space-y-3 text-xs">
-                      <div>
-                        <label className="text-[11px] text-slate-700 dark:text-slate-400 font-medium block mb-1">Card Number</label>
-                        <input
-                          type="text"
-                          placeholder="4242 •••• •••• 4242"
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white font-mono outline-none focus:border-emerald-500"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[11px] text-slate-700 dark:text-slate-400 font-medium block mb-1">Expiry (MM/YY)</label>
-                          <input
-                            type="text"
-                            placeholder="12/28"
-                            className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white font-mono outline-none focus:border-emerald-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-slate-700 dark:text-slate-400 font-medium block mb-1">CVC / CVV</label>
-                          <input
-                            type="text"
-                            placeholder="123"
-                            className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white font-mono outline-none focus:border-emerald-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Transaction ID Input for EasyPaisa/Bank */}
-                  {paymentMethod !== "card" && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                        <span>Enter Payment TRX ID / Reference Number</span>
-                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Instant Verification</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. TRX-9824105829"
-                        value={trxId}
-                        onChange={(e) => setTrxId(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white font-mono placeholder-slate-400 dark:placeholder-slate-600 outline-none shadow-sm"
-                      />
-                    </div>
-                  )}
-                </>
+                    )}
+                  </div>
+                </div>
               )}
 
               {/* Booking Save Failure Notice */}
@@ -1533,12 +1420,12 @@ export const MentorshipBooking: React.FC = () => {
                 {isProcessingPayment ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                    <span>Verifying Fee Payment & Reserving Slot...</span>
+                    <span>{quote && !quote.free ? "Checking your receipt..." : "Reserving your slot..."}</span>
                   </>
                 ) : (
                   <>
                     <Lock className="w-5 h-5 text-slate-950" />
-                    <span>{verifiedStudent ? "Confirm Free Slot Reservation" : "Submit Fee & Confirm 1-on-1 Session"}</span>
+                    <span>{quote && !quote.free ? `Verify Payment & Confirm Slot` : "Confirm Free Slot Reservation"}</span>
                   </>
                 )}
               </button>
