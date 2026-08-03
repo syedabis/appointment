@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 const REQUIRED_FIELDS: (keyof BookingSubmission)[] = [
   "fullName",
   "email",
+  "phone",
   "trackTitle",
   "date",
   "slot",
@@ -40,6 +41,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
   }
 
+  // focusAreas is an array, so it is not covered by the REQUIRED_FIELDS check.
+  const focusAreas = Array.isArray(body.focusAreas)
+    ? body.focusAreas.map(text).filter(Boolean)
+    : [];
+  if (focusAreas.length === 0) {
+    return NextResponse.json(
+      { error: "Please select at least one focus topic for this meeting." },
+      { status: 400 }
+    );
+  }
+
   const slotId = text(body.slotId);
   if (!slotId) {
     return NextResponse.json({ error: "Please select a time slot." }, { status: 400 });
@@ -62,7 +74,7 @@ export async function POST(request: Request) {
       careerStatus: text(body.careerStatus),
       portfolioUrl: text(body.portfolioUrl),
       goals: text(body.goals),
-      focusAreas: Array.isArray(body.focusAreas) ? body.focusAreas.map(text).filter(Boolean) : [],
+      focusAreas,
       timezone: text(body.timezone),
     });
   } catch (error) {
@@ -99,7 +111,7 @@ export async function POST(request: Request) {
     careerStatus: text(body.careerStatus),
     portfolioUrl: text(body.portfolioUrl),
     goals: text(body.goals),
-    focusAreas: Array.isArray(body.focusAreas) ? body.focusAreas.map(text).filter(Boolean) : [],
+    focusAreas,
     rollNo: "",
     cohort: eligibility.student.cohort,
     isEnrolledVerified: true,

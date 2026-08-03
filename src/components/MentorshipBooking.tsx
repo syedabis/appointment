@@ -302,6 +302,17 @@ export const MentorshipBooking: React.FC = () => {
       return;
     }
 
+    if (!studentDetails.phone.trim()) {
+      setFetchError("Please enter your WhatsApp number so we can send your session reminder.");
+      return;
+    }
+
+    // These pills are buttons, not checkboxes, so `required` cannot apply.
+    if (studentDetails.focusAreas.length === 0) {
+      setFetchError("Please select at least one focus topic for this meeting.");
+      return;
+    }
+
     // Confirmation summary. No fee is due for verified students; the payment
     // options behind ALLOW_PAID_BOOKING stay switched off for now.
     setShowPaymentModal(true);
@@ -969,11 +980,12 @@ export const MentorshipBooking: React.FC = () => {
                 {/* Phone / WhatsApp */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                    <span>WhatsApp Number</span>
+                    <span>WhatsApp Number <span className="text-emerald-600 dark:text-emerald-400">*</span></span>
                     {verifiedStudent && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Auto-filled</span>}
                   </label>
                   <input
                     type="tel"
+                    required
                     placeholder="e.g. +92 300 1234567"
                     value={studentDetails.phone}
                     onChange={(e) => setStudentDetails({ ...studentDetails, phone: e.target.value })}
@@ -1031,7 +1043,7 @@ export const MentorshipBooking: React.FC = () => {
               {/* Primary AI Focus Areas Checkboxes */}
               <div className="space-y-2 pt-2">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Select Focus Topics for This Meeting:
+                  Select Focus Topics for This Meeting: <span className="text-emerald-600 dark:text-emerald-400">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {[
