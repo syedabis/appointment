@@ -1347,7 +1347,7 @@ export const MentorshipBooking: React.FC = () => {
                     {quote.payment?.wallet.number && (
                       <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 space-y-1.5 text-xs">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-slate-600 dark:text-slate-400 font-medium">EasyPaisa / JazzCash</span>
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">EasyPaisa / JazzCash / NayaPay</span>
                           <span className="text-slate-900 dark:text-white font-bold">
                             {quote.payment.wallet.title}
                           </span>
